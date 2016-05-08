@@ -10,7 +10,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.1.0'
+    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.2.0'
     compile 'org.glassfish.hk2:hk2-metadata-generator:2.4.0'
 }
 ```
@@ -43,7 +43,6 @@ Add bundle to your dropwizard application
 ```java
 bootstrap.addBundle(new HK2Bundle(this));
 ```
-Where `this` is Application and `new InjectionBinder()` is subclass of `AbstractBinder` that allows you to manually bind services in `ServiceLocator`
 All classes that you want to be discovered or injected should have `@org.jvnet.hk2.annotations.Service` annotation
 
 ```java
@@ -54,7 +53,7 @@ public class DatabaseHealthCheck extends HealthCheck {
 
     @Override
     protected Result check() throws Exception {
-        if(database.isConnected())
+        if(database.get().isConnected())
             return Result.healthy();
         return Result.unhealthy("Not connected");
     }
@@ -62,8 +61,8 @@ public class DatabaseHealthCheck extends HealthCheck {
 ```
 
 ### How it works
-On start of application bundle initializes new `ServiceLocator` and bind found services into it.
-After init it sets created `ServiceLocator` as parent of jersey's `ServiceLocator`
+Hk2bundle initializes new `ServiceLocator` and binds found services into it.
+Then it sets created `ServiceLocator` as parent of jersey's `ServiceLocator`
 ```java
 environment.getApplicationContext().setAttribute(
     ServletProperties.SERVICE_LOCATOR, serviceLocator
