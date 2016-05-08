@@ -40,6 +40,13 @@ public class HK2Bundle implements ConfiguredBundle<Configuration> {
     }
 
     @Override
+    public void initialize(Bootstrap<?> bootstrap) {
+        listServices(Bundle.class).forEach(bootstrap::addBundle);
+        listServices(ConfiguredBundle.class).forEach(bootstrap::addBundle);
+        listServices(Command.class).forEach(bootstrap::addCommand);
+    }
+
+    @Override
     public void run(Configuration configuration, Environment environment) throws Exception {
         ServiceLocatorUtilities.bind(serviceLocator, new AbstractBinder() {
             @Override
@@ -69,12 +76,6 @@ public class HK2Bundle implements ConfiguredBundle<Configuration> {
 
         //Set service locator as parent for Jersey's service locator
         environment.getApplicationContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
-    }
-
-    @Override
-    public void initialize(Bootstrap<?> bootstrap) {
-        listServices(Bundle.class).forEach(bootstrap::addBundle);
-        listServices(Command.class).forEach(bootstrap::addCommand);
     }
 
     private <T> List<T> listServices(Class<T> type) {
