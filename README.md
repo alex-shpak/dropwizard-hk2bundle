@@ -10,7 +10,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.2.0'
+    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.2.4'
     compile 'org.glassfish.hk2:hk2-metadata-generator:2.4.0'
 }
 ```
@@ -29,7 +29,7 @@ dependencies {
     <dependency>
         <groupId>com.github.alex-shpak</groupId>
         <artifactId>dropwizard-hk2bundle</artifactId>
-        <version>0.1.0</version>
+        <version>0.2.4</version>
     </dependency>
     <dependency>
         <groupId>org.glassfish.hk2</groupId>
