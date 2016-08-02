@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group 'com.github.alex-shpak'
-version '0.2.2'
+version '0.2.3'
 
 repositories {
     mavenCentral()
