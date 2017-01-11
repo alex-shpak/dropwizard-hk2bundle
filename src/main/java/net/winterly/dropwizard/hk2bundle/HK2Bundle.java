@@ -6,6 +6,7 @@ import io.dropwizard.Bundle;
 import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.cli.Command;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.lifecycle.ServerLifecycleListener;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
@@ -13,17 +14,19 @@ import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.AdminEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import net.winterly.dropwizard.hk2bundle.validation.ValidationFeature;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.servlet.ServletProperties;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.bind;
 
 public class HK2Bundle implements ConfiguredBundle<Configuration> {
 
@@ -32,7 +35,7 @@ public class HK2Bundle implements ConfiguredBundle<Configuration> {
 
     public HK2Bundle(Application application, AbstractBinder... binders) {
         this.application = application;
-        this.serviceLocator = ServiceLocatorUtilities.bind(binders);
+        this.serviceLocator = bind(binders);
 
         populate(serviceLocator);
 
@@ -48,7 +51,8 @@ public class HK2Bundle implements ConfiguredBundle<Configuration> {
 
     @Override
     public void run(Configuration configuration, Environment environment) throws Exception {
-        ServiceLocatorUtilities.bind(serviceLocator, new AbstractBinder() {
+
+        bind(serviceLocator, new AbstractBinder() {
             @Override
             protected void configure() {
                 bind(application);
@@ -59,6 +63,10 @@ public class HK2Bundle implements ConfiguredBundle<Configuration> {
                 bind(environment.getObjectMapper());
             }
         });
+
+        JerseyEnvironment jersey = environment.jersey();
+        jersey.register(ServiceLocatorFeature.class);
+        jersey.register(ValidationFeature.class);
 
         LifecycleEnvironment lifecycle = environment.lifecycle();
         AdminEnvironment admin = environment.admin();
@@ -97,6 +105,5 @@ public class HK2Bundle implements ConfiguredBundle<Configuration> {
             throw new MultiException(e);
         }
     }
-
 
 }
