@@ -10,7 +10,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.2.4'
+    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.3.0'
     compile 'org.glassfish.hk2:hk2-metadata-generator:2.4.0'
 }
 ```
@@ -29,7 +29,7 @@ dependencies {
     <dependency>
         <groupId>com.github.alex-shpak</groupId>
         <artifactId>dropwizard-hk2bundle</artifactId>
-        <version>0.2.4</version>
+        <version>0.3.0</version>
     </dependency>
     <dependency>
         <groupId>org.glassfish.hk2</groupId>
@@ -60,6 +60,18 @@ public class DatabaseHealthCheck extends HealthCheck {
 }
 ```
 
+### Features
+ - Auto discovery for:
+   - Healthchecks
+   - Managed objects
+   - Lifecycle listeners
+   - Tasks
+   - Commands
+   - Other bundles
+ - Hibernate validators injections
+ - Support for injections before Jersey initialisation
+
+
 ### How it works
 Hk2bundle initializes new `ServiceLocator` and binds found services into it.
 Then it sets created `ServiceLocator` as parent of jersey's `ServiceLocator`
@@ -69,13 +81,8 @@ environment.getApplicationContext().setAttribute(
 );
 ```
 
-### What is discovered
- - Healthchecks
- - Managed objects
- - Lifecycle listeners
- - Tasks
- - Commands
- - Other bundles
+After jersey initialisation services will be re-injected with new `ServiceLocator`
+
 
 ### Without hk2 metadata generator
 If you don't want to use metadata generator you can bind services manually using `AbstractBinder` supplied to bundle constructor
