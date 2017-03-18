@@ -3,7 +3,6 @@ package net.winterly.dropwizard.hk2bundle;
 import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.Application;
 import io.dropwizard.Bundle;
-import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.cli.Command;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
@@ -19,16 +18,16 @@ import org.eclipse.jetty.util.component.LifeCycle;
 import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.servlet.ServletProperties;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.bind;
 
-public class HK2Bundle implements ConfiguredBundle<Configuration> {
+public class HK2Bundle implements Bundle {
 
     private final ServiceLocator serviceLocator;
     private final Application application;
@@ -38,19 +37,22 @@ public class HK2Bundle implements ConfiguredBundle<Configuration> {
         this.serviceLocator = bind(binders);
 
         populate(serviceLocator);
+        listServices(Binder.class).forEach(binder -> bind(serviceLocator, binder));
 
         serviceLocator.inject(application);
     }
 
     @Override
     public void initialize(Bootstrap<?> bootstrap) {
+        bootstrap.addBundle(new HK2ConfiguredBundle(serviceLocator));
+
         listServices(Bundle.class).forEach(bootstrap::addBundle);
         listServices(ConfiguredBundle.class).forEach(bootstrap::addBundle);
         listServices(Command.class).forEach(bootstrap::addCommand);
     }
 
     @Override
-    public void run(Configuration configuration, Environment environment) throws Exception {
+    public void run(Environment environment) {
 
         bind(serviceLocator, new AbstractBinder() {
             @Override
@@ -58,7 +60,6 @@ public class HK2Bundle implements ConfiguredBundle<Configuration> {
                 bind(application);
                 bind(application).to(Application.class);
 
-                bind(configuration);
                 bind(environment);
                 bind(environment.getObjectMapper());
             }
@@ -86,13 +87,14 @@ public class HK2Bundle implements ConfiguredBundle<Configuration> {
         environment.getApplicationContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
     }
 
-    private <T> List<T> listServices(Class<T> type) {
+    private <T> Stream<T> listServices(Class<T> type) {
         TypeFilter filter = new TypeFilter(type);
-        return serviceLocator.getAllServices(filter).stream().map(type::cast).collect(Collectors.toList());
+        return serviceLocator.getAllServices(filter).stream().map(type::cast);
     }
 
     /**
      * Populate serviceLocator with services from classpath
+     *
      * @see <a href="https://hk2.java.net/2.4.0-b16/inhabitant-generator.html">https://hk2.java.net/2.4.0-b16/inhabitant-generator.html</a>
      */
     private static void populate(ServiceLocator serviceLocator) {
@@ -100,8 +102,7 @@ public class HK2Bundle implements ConfiguredBundle<Configuration> {
 
         try {
             dcs.getPopulator().populate();
-        }
-        catch (IOException | MultiException e) {
+        } catch (IOException | MultiException e) {
             throw new MultiException(e);
         }
     }

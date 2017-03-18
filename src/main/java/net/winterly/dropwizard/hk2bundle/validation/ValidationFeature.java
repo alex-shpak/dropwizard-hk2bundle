@@ -27,10 +27,14 @@ public class ValidationFeature implements Feature {
                 .buildValidatorFactory()
                 .getValidator();
 
+        ConfiguredValidator configuredValidator = new DropwizardConfiguredValidator(validator);
+
         context.register(new AbstractBinder() {
             @Override
             protected void configure() {
-                bind(new DropwizardConfiguredValidator(validator)).to(ConfiguredValidator.class);
+                bind(configuredValidator)
+                        .to(ConfiguredValidator.class)
+                        .ranked(1); //should override default validator
             }
         });
 
