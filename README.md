@@ -79,7 +79,7 @@ public class DatabaseHealthCheck extends HealthCheck {
 Add `dropwizard-jdbi` module to your dependencies and use `@InjectDAO` annotation 
 ```java
 @InjectDAO
-private PiwikDAO piwikDAO;
+private MyDAO myDAO;
 ```
 Make sure that `DataSourceFactory` is registered in `ServiceLocator` for example via factory
 ```java
