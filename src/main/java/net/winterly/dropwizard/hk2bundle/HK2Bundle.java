@@ -13,6 +13,7 @@ import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.AdminEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import net.winterly.dropwizard.hk2bundle.jdbi.JDBIBinder;
 import net.winterly.dropwizard.hk2bundle.validation.ValidationFeature;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.glassfish.hk2.api.DynamicConfigurationService;
@@ -54,19 +55,14 @@ public class HK2Bundle implements Bundle {
     @Override
     public void run(Environment environment) {
 
-        bind(serviceLocator, new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bind(application);
-                bind(application).to(Application.class);
-
-                bind(environment);
-                bind(environment.getObjectMapper());
-            }
-        });
+        bind(serviceLocator,
+                new ApplicationBinder(application),
+                new EnvironmentBinder(environment),
+                new JDBIBinder()
+        );
 
         JerseyEnvironment jersey = environment.jersey();
-        jersey.register(ServiceLocatorFeature.class);
+        jersey.register(InjectLocatorFeature.class);
         jersey.register(ValidationFeature.class);
 
         LifecycleEnvironment lifecycle = environment.lifecycle();
@@ -104,6 +100,36 @@ public class HK2Bundle implements Bundle {
             dcs.getPopulator().populate();
         } catch (IOException | MultiException e) {
             throw new MultiException(e);
+        }
+    }
+
+    private static class ApplicationBinder extends AbstractBinder {
+
+        private final Application application;
+
+        private ApplicationBinder(Application application) {
+            this.application = application;
+        }
+
+        @Override
+        protected void configure() {
+            bind(application);
+            bind(application).to(Application.class);
+        }
+    }
+
+    private static class EnvironmentBinder extends AbstractBinder {
+
+        private final Environment environment;
+
+        private EnvironmentBinder(Environment environment) {
+            this.environment = environment;
+        }
+
+        @Override
+        protected void configure() {
+            bind(environment);
+            bind(environment.getObjectMapper());
         }
     }
 

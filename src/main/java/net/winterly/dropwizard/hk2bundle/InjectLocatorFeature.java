@@ -10,7 +10,7 @@ import javax.ws.rs.core.FeatureContext;
 /**
  * Re-injects all services with new jersey service locator when it is ready
  */
-public class ServiceLocatorFeature implements Feature {
+public class InjectLocatorFeature implements Feature {
 
     @Inject
     private ServiceLocator serviceLocator;

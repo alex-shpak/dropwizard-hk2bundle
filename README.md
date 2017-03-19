@@ -1,6 +1,18 @@
 ### Dropwizard hk2 Bundle
 Simple dropwizard bundle for autodiscovery and injection of dropwizard managed objects, tasks etc using hk2 integration
 
+### Features
+ - Auto discovery for:
+   - Healthchecks
+   - Managed objects
+   - Lifecycle listeners
+   - Tasks
+   - Commands
+   - Other bundles
+ - Hibernate validators injections
+ - Jdbi DAOs injections 
+ - Support for injections before Jersey initialisation
+ 
 ### Usage
 #### Gradle
 ```groovy
@@ -49,28 +61,53 @@ All classes that you want to be discovered or injected should have `@org.jvnet.h
 @Service
 public class DatabaseHealthCheck extends HealthCheck {
 
-    @Inject Provider<Database> database;
+    @Inject 
+    private Provider<Database> database;
 
     @Override
     protected Result check() throws Exception {
-        if(database.get().isConnected())
+        if(database.get().isConnected()) {
             return Result.healthy();
+        }
         return Result.unhealthy("Not connected");
     }
 }
 ```
 
-### Features
- - Auto discovery for:
-   - Healthchecks
-   - Managed objects
-   - Lifecycle listeners
-   - Tasks
-   - Commands
-   - Other bundles
- - Hibernate validators injections
- - Support for injections before Jersey initialisation
+#### JDBI DAO Injection
+Add `dropwizard-jdbi` module to your dependencies and use `@InjectDAO` annotation 
+```java
+@InjectDAO
+private PiwikDAO piwikDAO;
+```
+Make sure that `DataSourceFactory` is registered in `ServiceLocator` for example via factory
+```java
+public class DSFFactory implements Factory<DataSourceFactory> {
 
+    @Inject
+    private Configuration configuration;
+
+    @Override
+    public DataSourceFactory provide() {
+        return configuration.getDataSourceFactory();
+    }
+
+    @Override
+    public void dispose(DataSourceFactory instance) {
+
+    }
+}
+```
+```java
+@Service
+public class InjectionBinder extends AbstractBinder {
+
+    @Override
+    protected void configure() {
+        bindFactory(DSFFactory.class).to(DataSourceFactory.class).in(Singleton.class);
+    }
+}
+```
 
 ### How it works
 Hk2bundle initializes new `ServiceLocator` and binds found services into it.

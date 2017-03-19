@@ -10,6 +10,7 @@ repositories {
 
 dependencies {
     compile "io.dropwizard:dropwizard-core:$dropwizardVersion"
+    compileOnly "io.dropwizard:dropwizard-jdbi:$dropwizardVersion"
 
     testCompile "junit:junit:$junitVersion"
 }

@@ -28,7 +28,6 @@ public class ValidationFeature implements Feature {
                 .getValidator();
 
         ConfiguredValidator configuredValidator = new DropwizardConfiguredValidator(validator);
-
         context.register(new AbstractBinder() {
             @Override
             protected void configure() {
