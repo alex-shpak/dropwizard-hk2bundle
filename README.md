@@ -8,6 +8,7 @@ Simple dropwizard bundle for autodiscovery and injection of dropwizard managed o
    - Lifecycle listeners
    - Tasks
    - Commands
+   - HK2 Binders
    - Other bundles
  - Hibernate validators injections
  - Jdbi DAOs injections 
