@@ -1,7 +1,7 @@
-### Dropwizard hk2 Bundle
+## Dropwizard hk2 Bundle
 Simple dropwizard bundle for autodiscovery and injection of dropwizard managed objects, tasks etc using hk2 integration
 
-### Features
+## Features
  - Auto discovery for:
    - Healthchecks
    - Managed objects
@@ -14,7 +14,7 @@ Simple dropwizard bundle for autodiscovery and injection of dropwizard managed o
  - Jdbi DAOs injections 
  - Support for injections before Jersey initialisation
  
-### Usage
+## Usage
 #### Gradle
 ```groovy
 repositories {
@@ -23,7 +23,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.3.0'
+    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.4.1'
     compile 'org.glassfish.hk2:hk2-metadata-generator:2.4.0'
 }
 ```
@@ -42,7 +42,7 @@ dependencies {
     <dependency>
         <groupId>com.github.alex-shpak</groupId>
         <artifactId>dropwizard-hk2bundle</artifactId>
-        <version>0.3.0</version>
+        <version>0.4.1</version>
     </dependency>
     <dependency>
         <groupId>org.glassfish.hk2</groupId>
@@ -76,7 +76,10 @@ public class DatabaseHealthCheck extends HealthCheck {
 ```
 
 #### JDBI DAO Injection
-Add `dropwizard-jdbi` module to your dependencies and use `@InjectDAO` annotation 
+Add `dropwizard-jdbi` module to your dependencies and use `@InjectDAO` annotation
+```java
+bootstrap.addBundle(new HK2Bundle(this, new JDBIBinder()));
+```
 ```java
 @InjectDAO
 private MyDAO myDAO;
@@ -110,7 +113,7 @@ public class InjectionBinder extends AbstractBinder {
 }
 ```
 
-### How it works
+## How it works
 Hk2bundle initializes new `ServiceLocator` and binds found services into it.
 Then it sets created `ServiceLocator` as parent of jersey's `ServiceLocator`
 ```java
@@ -122,7 +125,7 @@ environment.getApplicationContext().setAttribute(
 After jersey initialisation services will be re-injected with new `ServiceLocator`
 
 
-### Without hk2 metadata generator
+## Without hk2 metadata generator
 If you don't want to use metadata generator you can bind services manually using `AbstractBinder` supplied to bundle constructor
 
 ```java
@@ -138,5 +141,5 @@ public class Binder extends AbstractBinder {
 bootstrap.addBundle(new HK2Bundle(this, new Binder()));
 ```
 
-### Licence
+## Licence
 [MIT](LICENCE)

@@ -13,7 +13,6 @@ import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.AdminEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import net.winterly.dropwizard.hk2bundle.jdbi.JDBIBinder;
 import net.winterly.dropwizard.hk2bundle.validation.ValidationFeature;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.glassfish.hk2.api.DynamicConfigurationService;
@@ -43,6 +42,21 @@ public class HK2Bundle implements Bundle {
         serviceLocator.inject(application);
     }
 
+    /**
+     * Populate serviceLocator with services from classpath
+     *
+     * @see <a href="https://hk2.java.net/2.4.0-b16/inhabitant-generator.html">https://hk2.java.net/2.4.0-b16/inhabitant-generator.html</a>
+     */
+    private static void populate(ServiceLocator serviceLocator) {
+        DynamicConfigurationService dcs = serviceLocator.getService(DynamicConfigurationService.class);
+
+        try {
+            dcs.getPopulator().populate();
+        } catch (IOException | MultiException e) {
+            throw new MultiException(e);
+        }
+    }
+
     @Override
     public void initialize(Bootstrap<?> bootstrap) {
         bootstrap.addBundle(new HK2ConfiguredBundle(serviceLocator));
@@ -57,8 +71,7 @@ public class HK2Bundle implements Bundle {
 
         bind(serviceLocator,
                 new ApplicationBinder(application),
-                new EnvironmentBinder(environment),
-                new JDBIBinder()
+                new EnvironmentBinder(environment)
         );
 
         JerseyEnvironment jersey = environment.jersey();
@@ -86,21 +99,6 @@ public class HK2Bundle implements Bundle {
     private <T> Stream<T> listServices(Class<T> type) {
         TypeFilter filter = new TypeFilter(type);
         return serviceLocator.getAllServices(filter).stream().map(type::cast);
-    }
-
-    /**
-     * Populate serviceLocator with services from classpath
-     *
-     * @see <a href="https://hk2.java.net/2.4.0-b16/inhabitant-generator.html">https://hk2.java.net/2.4.0-b16/inhabitant-generator.html</a>
-     */
-    private static void populate(ServiceLocator serviceLocator) {
-        DynamicConfigurationService dcs = serviceLocator.getService(DynamicConfigurationService.class);
-
-        try {
-            dcs.getPopulator().populate();
-        } catch (IOException | MultiException e) {
-            throw new MultiException(e);
-        }
     }
 
     private static class ApplicationBinder extends AbstractBinder {

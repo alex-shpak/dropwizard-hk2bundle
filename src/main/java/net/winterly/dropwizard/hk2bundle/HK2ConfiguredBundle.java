@@ -5,9 +5,8 @@ import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
-import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.bind;
+import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.addOneConstant;
 
 class HK2ConfiguredBundle implements ConfiguredBundle<Configuration> {
 
@@ -24,12 +23,7 @@ class HK2ConfiguredBundle implements ConfiguredBundle<Configuration> {
 
     @Override
     public void run(Configuration configuration, Environment environment) throws Exception {
-        bind(serviceLocator, new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bind(configuration);
-            }
-        });
+        addOneConstant(serviceLocator, configuration);
     }
 
 }
