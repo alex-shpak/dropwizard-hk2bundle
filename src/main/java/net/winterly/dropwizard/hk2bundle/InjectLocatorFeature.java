@@ -8,7 +8,11 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
 /**
- * Re-injects all services with new jersey service locator when it is ready
+ * Re-injects all services with jersey service locator when it is ready.
+ * <p>
+ * In case if services that was created before jersey initialization need to access services from child service locator
+ * <p>
+ * Use wisely, might cause big performance hit on startup
  */
 public class InjectLocatorFeature implements Feature {
 
@@ -18,7 +22,7 @@ public class InjectLocatorFeature implements Feature {
     @Override
     public boolean configure(FeatureContext context) {
         serviceLocator.getParent()
-                .getAllServiceHandles(d -> true)
+                .getAllServiceHandles(service -> true)
                 .stream()
                 .filter(ServiceHandle::isActive)
                 .map(ServiceHandle::getService)

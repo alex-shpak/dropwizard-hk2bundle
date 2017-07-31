@@ -13,16 +13,15 @@ import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.AdminEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import net.winterly.dropwizard.hk2bundle.validation.ValidationFeature;
 import org.eclipse.jetty.util.component.LifeCycle;
-import org.glassfish.hk2.api.DynamicConfigurationService;
-import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.servlet.ServletProperties;
 
-import java.io.IOException;
+import javax.ws.rs.core.Feature;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.bind;
@@ -31,30 +30,18 @@ public class HK2Bundle implements Bundle {
 
     private final ServiceLocator serviceLocator;
     private final Application application;
+    private final Set<Class<? extends Feature>> features;
 
-    public HK2Bundle(Application application, AbstractBinder... binders) {
+    HK2Bundle(Application application, ServiceLocator serviceLocator, Set<Class<? extends Feature>> features) {
         this.application = application;
-        this.serviceLocator = bind(binders);
+        this.serviceLocator = serviceLocator;
+        this.features = features;
 
-        populate(serviceLocator);
         listServices(Binder.class).forEach(binder -> bind(serviceLocator, binder));
-
-        serviceLocator.inject(application);
     }
 
-    /**
-     * Populate serviceLocator with services from classpath
-     *
-     * @see <a href="https://hk2.java.net/2.4.0-b16/inhabitant-generator.html">https://hk2.java.net/2.4.0-b16/inhabitant-generator.html</a>
-     */
-    private static void populate(ServiceLocator serviceLocator) {
-        DynamicConfigurationService dcs = serviceLocator.getService(DynamicConfigurationService.class);
-
-        try {
-            dcs.getPopulator().populate();
-        } catch (IOException | MultiException e) {
-            throw new MultiException(e);
-        }
+    public static HK2BundleBuilder with(Application application) {
+        return new HK2BundleBuilder(application);
     }
 
     @Override
@@ -68,18 +55,13 @@ public class HK2Bundle implements Bundle {
 
     @Override
     public void run(Environment environment) {
-
-        bind(serviceLocator,
-                new ApplicationBinder(application),
-                new EnvironmentBinder(environment)
-        );
+        ServiceLocatorUtilities.bind(serviceLocator, new EnvBinder(application, environment));
 
         JerseyEnvironment jersey = environment.jersey();
-        jersey.register(InjectLocatorFeature.class);
-        jersey.register(ValidationFeature.class);
-
         LifecycleEnvironment lifecycle = environment.lifecycle();
         AdminEnvironment admin = environment.admin();
+
+        features.forEach(jersey::register);
 
         listServices(HealthCheck.class).forEach(healthCheck -> {
             String name = healthCheck.getClass().getSimpleName();
@@ -94,6 +76,7 @@ public class HK2Bundle implements Bundle {
 
         //Set service locator as parent for Jersey's service locator
         environment.getApplicationContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
+        serviceLocator.inject(application);
     }
 
     private <T> Stream<T> listServices(Class<T> type) {
@@ -101,34 +84,22 @@ public class HK2Bundle implements Bundle {
         return serviceLocator.getAllServices(filter).stream().map(type::cast);
     }
 
-    private static class ApplicationBinder extends AbstractBinder {
+    private static class EnvBinder extends AbstractBinder {
 
         private final Application application;
+        private final Environment environment;
 
-        private ApplicationBinder(Application application) {
+        private EnvBinder(Application application, Environment environment) {
             this.application = application;
+            this.environment = environment;
         }
 
         @Override
         protected void configure() {
             bind(application);
             bind(application).to(Application.class);
-        }
-    }
-
-    private static class EnvironmentBinder extends AbstractBinder {
-
-        private final Environment environment;
-
-        private EnvironmentBinder(Environment environment) {
-            this.environment = environment;
-        }
-
-        @Override
-        protected void configure() {
             bind(environment);
             bind(environment.getObjectMapper());
         }
     }
-
 }

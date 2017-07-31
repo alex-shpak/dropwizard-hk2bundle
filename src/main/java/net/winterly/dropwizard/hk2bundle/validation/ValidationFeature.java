@@ -20,7 +20,6 @@ public class ValidationFeature implements Feature {
 
     @Override
     public boolean configure(FeatureContext context) {
-
         Validator validator = Validators
                 .newConfiguration()
                 .constraintValidatorFactory(new InjectingValidatorFactory())
@@ -44,7 +43,7 @@ public class ValidationFeature implements Feature {
 
         @Override
         public final <T extends ConstraintValidator<?, ?>> T getInstance(Class<T> key) {
-            return serviceLocator.createAndInitialize(key);
+            return serviceLocator.createAndInitialize(key);  // happens once in lifecycle
         }
 
         @Override

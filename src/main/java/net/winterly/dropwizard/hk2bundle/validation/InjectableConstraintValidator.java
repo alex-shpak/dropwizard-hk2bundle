@@ -10,7 +10,7 @@ import java.lang.annotation.Annotation;
 public abstract class InjectableConstraintValidator<A extends Annotation, T> implements ConstraintValidator<A, T> {
 
     @Inject
-    protected ServiceLocator serviceLocator;
+    private ServiceLocator serviceLocator;
 
     @Override
     public boolean isValid(T value, ConstraintValidatorContext context) {
