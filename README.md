@@ -1,8 +1,9 @@
 ## Dropwizard hk2 Bundle
 Simple dropwizard bundle for autodiscovery and injection of dropwizard managed objects, tasks etc using hk2 integration
 
+
 ## Features
- - Auto discovery for:
+ - Auto registration and injection for:
    - Healthchecks
    - Managed objects
    - Lifecycle listeners
@@ -13,6 +14,7 @@ Simple dropwizard bundle for autodiscovery and injection of dropwizard managed o
  - Hibernate validators injections
  - Jdbi DAOs injections 
  - Support for injections before Jersey initialisation
+ 
  
 ## Usage
 #### Gradle
@@ -27,6 +29,7 @@ dependencies {
     compile 'org.glassfish.hk2:hk2-metadata-generator:2.4.0'
 }
 ```
+
 
 #### Maven
 ```xml
@@ -51,12 +54,15 @@ dependencies {
     </dependency>
 </dependencies>
 ```
+
+
 #### Code
 Add bundle to your dropwizard application
 ```java
-bootstrap.addBundle(new HK2Bundle(this));
+bootstrap.addBundle(HK2Bundle.with(this).build());
 ```
-All classes that you want to be discovered or injected should have `@org.jvnet.hk2.annotations.Service` annotation
+
+All classes that you want to be discovered or injected should be annotated with `@org.jvnet.hk2.annotations.Service` annotation
 
 ```java
 @Service
@@ -75,43 +81,22 @@ public class DatabaseHealthCheck extends HealthCheck {
 }
 ```
 
+
 #### JDBI DAO Injection
-Add `dropwizard-jdbi` module to your dependencies and use `@InjectDAO` annotation
+Considering you already has `dropwizard-jdbi` module in dependencies, add `JDBIBinder` to `HK2Bundle` configuration.
+Then you would be able to inject DAOs.
+
 ```java
-bootstrap.addBundle(new HK2Bundle(this, new JDBIBinder()));
+HK2Bundle hk2bundle = HK2Bundle.with(this)
+        .bind(new JDBIBinder(config -> config.database))
+        .build();
+bootstrap.addBundle(hk2bundle);
 ```
 ```java
-@InjectDAO
+@Inject
 private MyDAO myDAO;
 ```
-Make sure that `DataSourceFactory` is registered in `ServiceLocator` for example via factory
-```java
-public class DSFFactory implements Factory<DataSourceFactory> {
 
-    @Inject
-    private Configuration configuration;
-
-    @Override
-    public DataSourceFactory provide() {
-        return configuration.getDataSourceFactory();
-    }
-
-    @Override
-    public void dispose(DataSourceFactory instance) {
-
-    }
-}
-```
-```java
-@Service
-public class InjectionBinder extends AbstractBinder {
-
-    @Override
-    protected void configure() {
-        bindFactory(DSFFactory.class).to(DataSourceFactory.class).in(Singleton.class);
-    }
-}
-```
 
 ## How it works
 Hk2bundle initializes new `ServiceLocator` and binds found services into it.
@@ -122,7 +107,7 @@ environment.getApplicationContext().setAttribute(
 );
 ```
 
-After jersey initialisation services will be re-injected with new `ServiceLocator`
+After jersey initialisation services (if enabled) will be re-injected with new `ServiceLocator`
 
 
 ## Without hk2 metadata generator
@@ -133,13 +118,19 @@ public class Binder extends AbstractBinder {
 
     @Override
     protected void configure() {
-        bind(DatabaseHealthCheck.class);
+        bind(DatabaseHealthCheck.class)
+            .to(HealthCheck.class)
+            .in(Singleton.class);
     }
 }
 ```
 ```java
-bootstrap.addBundle(new HK2Bundle(this, new Binder()));
+bootstrap.addBundle(HK2Bundle.with(this)
+        .bind(new Binder())
+        .build()
+);
 ```
+
 
 ## Licence
 [MIT](LICENCE)
