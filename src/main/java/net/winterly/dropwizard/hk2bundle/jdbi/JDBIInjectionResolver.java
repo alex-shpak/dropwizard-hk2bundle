@@ -26,12 +26,12 @@ public class JDBIInjectionResolver implements InjectionResolver<InjectDAO> {
 
     @Override
     public boolean isConstructorParameterIndicator() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isMethodParameterIndicator() {
-        return false;
+        return true;
     }
 
 }

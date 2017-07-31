@@ -1,4 +1,9 @@
 package net.winterly.dropwizard.hk2bundle.jdbi;
 
-public class DataSourceFactoryProvider {
+import io.dropwizard.Configuration;
+import io.dropwizard.db.DataSourceFactory;
+
+import java.util.function.Function;
+
+public interface DataSourceFactoryProvider extends Function<Configuration, DataSourceFactory> {
 }

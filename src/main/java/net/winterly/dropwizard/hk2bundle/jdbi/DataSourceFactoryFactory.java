@@ -6,13 +6,13 @@ import org.glassfish.hk2.api.Factory;
 
 import javax.inject.Inject;
 
-public class DSFFactory implements Factory<DataSourceFactory> {
+public class DataSourceFactoryFactory implements Factory<DataSourceFactory> {
 
     @Inject
     private Configuration configuration;
 
     @Inject
-    private DataSourceFactoryProvider<Configuration> dataSourceFactoryProvider;
+    private DataSourceFactoryProvider dataSourceFactoryProvider;
 
     @Override
     public DataSourceFactory provide() {
