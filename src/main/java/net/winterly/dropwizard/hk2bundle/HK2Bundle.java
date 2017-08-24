@@ -13,6 +13,7 @@ import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.AdminEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import net.winterly.dropwizard.hk2bundle.validation.HK2ValidationBundle;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
@@ -47,6 +48,7 @@ public class HK2Bundle implements Bundle {
     @Override
     public void initialize(Bootstrap<?> bootstrap) {
         bootstrap.addBundle(new HK2ConfiguredBundle(serviceLocator));
+        bootstrap.addBundle(new HK2ValidationBundle());
 
         listServices(Bundle.class).forEach(bootstrap::addBundle);
         listServices(ConfiguredBundle.class).forEach(bootstrap::addBundle);

@@ -2,7 +2,6 @@ package net.winterly.dropwizard.hk2bundle;
 
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
-import net.winterly.dropwizard.hk2bundle.validation.ValidationFeature;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
@@ -31,8 +30,6 @@ public class HK2BundleBuilder {
     }
 
     public HK2Bundle build() {
-        features.add(ValidationFeature.class);
-
         ServiceLocator serviceLocator = ServiceLocatorUtilities.createAndPopulateServiceLocator();
         binders.forEach(binder -> ServiceLocatorUtilities.bind(serviceLocator, binder));
 
