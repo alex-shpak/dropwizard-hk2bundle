@@ -7,6 +7,8 @@ import io.dropwizard.setup.Environment;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 
+import javax.inject.Inject;
+
 /**
  * Configured bundle used to obtain and bind configuration instance into HK2.
  */
@@ -14,7 +16,8 @@ class HK2ConfiguredBundle implements ConfiguredBundle<Configuration> {
 
     private final ServiceLocator serviceLocator;
 
-    HK2ConfiguredBundle(ServiceLocator serviceLocator) {
+    @Inject
+    public HK2ConfiguredBundle(ServiceLocator serviceLocator) {
         this.serviceLocator = serviceLocator;
     }
 

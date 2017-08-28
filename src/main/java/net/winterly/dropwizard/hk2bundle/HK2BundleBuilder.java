@@ -1,7 +1,8 @@
 package net.winterly.dropwizard.hk2bundle;
 
-import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
+import net.winterly.dropwizard.hk2bundle.jdbi.DataSourceFactoryProvider;
+import net.winterly.dropwizard.hk2bundle.jdbi.JDBIBinder;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
@@ -11,12 +12,10 @@ import java.util.*;
 
 public class HK2BundleBuilder {
 
-    private final Application application;
     private final Set<Class<? extends Feature>> features = new HashSet<>();
     private final List<Binder> binders = new ArrayList<>();
 
-    HK2BundleBuilder(Application application) {
-        this.application = application;
+    HK2BundleBuilder() {
     }
 
     public HK2BundleBuilder bind(Binder... binders) {
@@ -29,11 +28,16 @@ public class HK2BundleBuilder {
         return this;
     }
 
+    public HK2BundleBuilder withJDBI(DataSourceFactoryProvider dataSourceFactoryProvider) {
+        binders.add(new JDBIBinder(dataSourceFactoryProvider));
+        return this;
+    }
+
     public HK2Bundle build() {
         ServiceLocator serviceLocator = ServiceLocatorUtilities.createAndPopulateServiceLocator();
         binders.forEach(binder -> ServiceLocatorUtilities.bind(serviceLocator, binder));
 
-        return new HK2Bundle(application, serviceLocator, features);
+        return new HK2Bundle(serviceLocator, features);
     }
 
     public void attach(Bootstrap bootstrap) {

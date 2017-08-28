@@ -25,7 +25,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.4.1'
+    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.5.1'
     compile 'org.glassfish.hk2:hk2-metadata-generator:2.4.0'
 }
 ```
@@ -45,7 +45,7 @@ dependencies {
     <dependency>
         <groupId>com.github.alex-shpak</groupId>
         <artifactId>dropwizard-hk2bundle</artifactId>
-        <version>0.4.1</version>
+        <version>0.5.1</version>
     </dependency>
     <dependency>
         <groupId>org.glassfish.hk2</groupId>
@@ -59,7 +59,7 @@ dependencies {
 #### Code
 Add bundle to your dropwizard application
 ```java
-bootstrap.addBundle(HK2Bundle.with(this).build());
+bootstrap.addBundle(HK2Bundle.builder().build());
 ```
 
 All classes that you want to be discovered or injected should be annotated with `@org.jvnet.hk2.annotations.Service` annotation
@@ -87,8 +87,8 @@ Considering you already has `dropwizard-jdbi` module in dependencies, add `JDBIB
 Then you would be able to inject DAOs.
 
 ```java
-HK2Bundle hk2bundle = HK2Bundle.with(this)
-        .bind(new JDBIBinder(config -> config.database))
+HK2Bundle hk2bundle = HK2Bundle.builder()
+        .withJDBI(config -> config.database)
         .build();
 bootstrap.addBundle(hk2bundle);
 ```
@@ -125,7 +125,7 @@ public class Binder extends AbstractBinder {
 }
 ```
 ```java
-bootstrap.addBundle(HK2Bundle.with(this)
+bootstrap.addBundle(HK2Bundle.builder()
         .bind(new Binder())
         .build()
 );

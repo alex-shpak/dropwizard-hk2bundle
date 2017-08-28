@@ -30,25 +30,27 @@ import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.bind;
 public class HK2Bundle implements Bundle {
 
     private final ServiceLocator serviceLocator;
-    private final Application application;
     private final Set<Class<? extends Feature>> features;
 
-    HK2Bundle(Application application, ServiceLocator serviceLocator, Set<Class<? extends Feature>> features) {
-        this.application = application;
+    private Application application;
+
+    HK2Bundle(ServiceLocator serviceLocator, Set<Class<? extends Feature>> features) {
         this.serviceLocator = serviceLocator;
         this.features = features;
 
         listServices(Binder.class).forEach(binder -> bind(serviceLocator, binder));
     }
 
-    public static HK2BundleBuilder with(Application application) {
-        return new HK2BundleBuilder(application);
+    public static HK2BundleBuilder builder() {
+        return new HK2BundleBuilder();
     }
 
     @Override
     public void initialize(Bootstrap<?> bootstrap) {
+        this.application = bootstrap.getApplication();
+
         bootstrap.addBundle(new HK2ConfiguredBundle(serviceLocator));
-        bootstrap.addBundle(new HK2ValidationBundle());
+        bootstrap.addBundle(new HK2ValidationBundle(serviceLocator));
 
         listServices(Bundle.class).forEach(bootstrap::addBundle);
         listServices(ConfiguredBundle.class).forEach(bootstrap::addBundle);
@@ -78,6 +80,8 @@ public class HK2Bundle implements Bundle {
 
         //Set service locator as parent for Jersey's service locator
         environment.getApplicationContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
+        environment.getAdminContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
+
         serviceLocator.inject(application);
     }
 
@@ -102,6 +106,8 @@ public class HK2Bundle implements Bundle {
             bind(application).to(Application.class);
             bind(environment);
             bind(environment.getObjectMapper());
+            bind(environment.metrics());
+            bind(environment.getValidator());
         }
     }
 }

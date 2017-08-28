@@ -1,6 +1,5 @@
 package net.winterly.dropwizard.hk2bundle.jdbi;
 
-import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.jdbi.InjectDAO;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
@@ -20,10 +19,6 @@ public class JDBIBinder extends AbstractBinder {
     @Override
     protected void configure() {
         bind(dataSourceFactoryProvider);
-
-        bindFactory(DataSourceFactoryFactory.class)
-                .to(DataSourceFactory.class)
-                .in(Singleton.class);
 
         bindFactory(JDBIFactory.class)
                 .to(DBI.class)

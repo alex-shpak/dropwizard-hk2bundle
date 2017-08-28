@@ -7,22 +7,42 @@ import io.dropwizard.setup.Environment;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorFactory;
 
 public class HK2ValidationBundle implements Bundle {
 
+    private final ServiceLocator serviceLocator;
+
     @Inject
-    private ServiceLocator serviceLocator;
+    public HK2ValidationBundle(ServiceLocator serviceLocator) {
+        this.serviceLocator = serviceLocator;
+    }
 
     @Override
     public void initialize(Bootstrap<?> bootstrap) {
+
     }
 
     @Override
     public void run(Environment environment) {
         environment.setValidator(Validators
                 .newConfiguration()
-                .constraintValidatorFactory(serviceLocator.getService(InjectingValidatorFactory.class))
+                .constraintValidatorFactory(new InjectingValidatorFactory())
                 .buildValidatorFactory()
                 .getValidator());
+    }
+
+    private class InjectingValidatorFactory implements ConstraintValidatorFactory {
+
+        @Override
+        public final <T extends ConstraintValidator<?, ?>> T getInstance(Class<T> key) {
+            return serviceLocator.createAndInitialize(key);  // happens once in lifecycle
+        }
+
+        @Override
+        public void releaseInstance(ConstraintValidator<?, ?> instance) {
+
+        }
     }
 }
