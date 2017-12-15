@@ -131,6 +131,18 @@ bootstrap.addBundle(HK2Bundle.builder()
 );
 ```
 
+## Using DropwizardBinder
+`DropwizardBinder` is convenience class that contains `register()` method to register objects specific for dropwizard
+```java
+public class Binder extends DropwizardBinder {
+
+    @Override
+    protected void configure() {
+        register(DatabaseHealthCheck.class);
+    }
+}
+```
+
 
 ## Licence
 [MIT](LICENCE)
