@@ -16,16 +16,13 @@ import io.dropwizard.setup.Environment;
 import net.winterly.dropwizard.hk2bundle.validation.HK2ValidationBundle;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.servlet.ServletProperties;
 
 import javax.ws.rs.core.Feature;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
-
-import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.bind;
 
 public class HK2Bundle implements Bundle {
 
@@ -37,8 +34,6 @@ public class HK2Bundle implements Bundle {
     HK2Bundle(ServiceLocator serviceLocator, Set<Class<? extends Feature>> features) {
         this.serviceLocator = serviceLocator;
         this.features = features;
-
-        listServices(Binder.class).forEach(binder -> bind(serviceLocator, binder));
     }
 
     public static HK2BundleBuilder builder() {
@@ -85,9 +80,8 @@ public class HK2Bundle implements Bundle {
         serviceLocator.inject(application);
     }
 
-    private <T> Stream<T> listServices(Class<T> type) {
-        TypeFilter filter = new TypeFilter(type);
-        return serviceLocator.getAllServices(filter).stream().map(type::cast);
+    private <T> List<T> listServices(Class<T> type) {
+        return serviceLocator.getAllServices(type);
     }
 
     private static class EnvBinder extends AbstractBinder {

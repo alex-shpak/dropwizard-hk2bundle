@@ -8,5 +8,5 @@ import java.util.function.Function;
 /**
  * Converts {@link Configuration} into {@link DataSourceFactory} for configuring database
  */
-public interface DataSourceFactoryProvider extends Function<Configuration, DataSourceFactory> {
+public interface DataSourceFactoryProvider<T extends Configuration> extends Function<T, DataSourceFactory> {
 }

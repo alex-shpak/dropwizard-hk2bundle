@@ -20,7 +20,7 @@ public class JDBIFactory implements Factory<DBI> {
     private Configuration configuration;
 
     @Inject
-    private DataSourceFactoryProvider dataSourceFactoryProvider;
+    private DataSourceFactoryProvider<Configuration> dataSourceFactoryProvider;
 
     @Override
     public DBI provide() {
