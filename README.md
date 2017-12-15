@@ -25,8 +25,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.5.2'
-    compile 'org.glassfish.hk2:hk2-metadata-generator:2.4.0'
+    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.5.3'
 }
 ```
 
@@ -45,12 +44,7 @@ dependencies {
     <dependency>
         <groupId>com.github.alex-shpak</groupId>
         <artifactId>dropwizard-hk2bundle</artifactId>
-        <version>0.5.2</version>
-    </dependency>
-    <dependency>
-        <groupId>org.glassfish.hk2</groupId>
-        <artifactId>hk2-metadata-generator</artifactId>
-        <version>2.4.0</version>
+        <version>0.5.3</version>
     </dependency>
 </dependencies>
 ```
@@ -59,7 +53,10 @@ dependencies {
 #### Code
 Add bundle to your dropwizard application
 ```java
-bootstrap.addBundle(HK2Bundle.builder().build());
+bootstrap.addBundle(HK2Bundle.builder()
+        .bind(new Binder())
+        .build()
+);
 ```
 
 All classes that you want to be discovered or injected should be annotated with `@org.jvnet.hk2.annotations.Service` annotation
@@ -80,6 +77,18 @@ public class DatabaseHealthCheck extends HealthCheck {
     }
 }
 ```
+
+Register `DatabaseHealthCheck` in HK2
+```java
+public class Binder extends DropwizardBinder {
+
+    @Override
+    protected void configure() {
+        register(DatabaseHealthCheck.class);
+    }
+}
+```
+`DropwizardBinder` is convenience class that contains `register()` method to register objects specific for dropwizard
 
 
 #### JDBI DAO Injection
@@ -108,40 +117,6 @@ environment.getApplicationContext().setAttribute(
 ```
 
 After jersey initialisation services (if enabled) will be re-injected with new `ServiceLocator`
-
-
-## Without hk2 metadata generator
-If you don't want to use metadata generator you can bind services manually using `AbstractBinder` supplied to bundle constructor
-
-```java
-public class Binder extends AbstractBinder {
-
-    @Override
-    protected void configure() {
-        bind(DatabaseHealthCheck.class)
-            .to(HealthCheck.class)
-            .in(Singleton.class);
-    }
-}
-```
-```java
-bootstrap.addBundle(HK2Bundle.builder()
-        .bind(new Binder())
-        .build()
-);
-```
-
-## Using DropwizardBinder
-`DropwizardBinder` is convenience class that contains `register()` method to register objects specific for dropwizard
-```java
-public class Binder extends DropwizardBinder {
-
-    @Override
-    protected void configure() {
-        register(DatabaseHealthCheck.class);
-    }
-}
-```
 
 
 ## Licence
