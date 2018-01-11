@@ -25,7 +25,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.5.3'
+    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.5.4'
 }
 ```
 
@@ -44,7 +44,7 @@ dependencies {
     <dependency>
         <groupId>com.github.alex-shpak</groupId>
         <artifactId>dropwizard-hk2bundle</artifactId>
-        <version>0.5.3</version>
+        <version>0.5.4</version>
     </dependency>
 </dependencies>
 ```
