@@ -7,12 +7,12 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 
-import javax.ws.rs.core.Feature;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class HK2BundleBuilder {
 
-    private final Set<Class<? extends Feature>> features = new HashSet<>();
     private final List<Binder> binders = new ArrayList<>();
 
     HK2BundleBuilder() {
@@ -23,11 +23,6 @@ public class HK2BundleBuilder {
         return this;
     }
 
-    public HK2BundleBuilder reinjectServices() {
-        features.add(InjectLocatorFeature.class);
-        return this;
-    }
-
     public HK2BundleBuilder withJDBI(DataSourceFactoryProvider dataSourceFactoryProvider) {
         binders.add(new JDBIBinder(dataSourceFactoryProvider));
         return this;
@@ -35,9 +30,9 @@ public class HK2BundleBuilder {
 
     public HK2Bundle build() {
         ServiceLocator serviceLocator = ServiceLocatorUtilities.createAndPopulateServiceLocator();
-        binders.forEach(binder -> ServiceLocatorUtilities.bind(serviceLocator, binder));
+        ServiceLocatorUtilities.bind(serviceLocator, binders.toArray(new Binder[]{}));
 
-        return new HK2Bundle(serviceLocator, features);
+        return new HK2Bundle(serviceLocator);
     }
 
     public void attach(Bootstrap bootstrap) {

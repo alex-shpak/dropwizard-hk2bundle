@@ -12,12 +12,8 @@ import javax.validation.ConstraintValidatorFactory;
 
 public class HK2ValidationBundle implements Bundle {
 
-    private final ServiceLocator serviceLocator;
-
     @Inject
-    public HK2ValidationBundle(ServiceLocator serviceLocator) {
-        this.serviceLocator = serviceLocator;
-    }
+    private ServiceLocator serviceLocator;
 
     @Override
     public void initialize(Bootstrap<?> bootstrap) {

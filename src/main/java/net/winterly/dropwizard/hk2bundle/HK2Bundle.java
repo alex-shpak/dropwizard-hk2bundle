@@ -5,7 +5,6 @@ import io.dropwizard.Application;
 import io.dropwizard.Bundle;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.cli.Command;
-import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.lifecycle.ServerLifecycleListener;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
@@ -20,20 +19,18 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.servlet.ServletProperties;
 
-import javax.ws.rs.core.Feature;
+import javax.inject.Singleton;
 import java.util.List;
-import java.util.Set;
 
 public class HK2Bundle implements Bundle {
 
-    private final ServiceLocator serviceLocator;
-    private final Set<Class<? extends Feature>> features;
+    final ServiceLocator serviceLocator;
 
     private Application application;
 
-    HK2Bundle(ServiceLocator serviceLocator, Set<Class<? extends Feature>> features) {
+    HK2Bundle(ServiceLocator serviceLocator) {
         this.serviceLocator = serviceLocator;
-        this.features = features;
+        ServiceLocatorUtilities.bind(serviceLocator, new BundleBinder());
     }
 
     public static HK2BundleBuilder builder() {
@@ -44,9 +41,6 @@ public class HK2Bundle implements Bundle {
     public void initialize(Bootstrap<?> bootstrap) {
         this.application = bootstrap.getApplication();
 
-        bootstrap.addBundle(new HK2ConfiguredBundle(serviceLocator));
-        bootstrap.addBundle(new HK2ValidationBundle(serviceLocator));
-
         listServices(Bundle.class).forEach(bootstrap::addBundle);
         listServices(ConfiguredBundle.class).forEach(bootstrap::addBundle);
         listServices(Command.class).forEach(bootstrap::addCommand);
@@ -56,11 +50,8 @@ public class HK2Bundle implements Bundle {
     public void run(Environment environment) {
         ServiceLocatorUtilities.bind(serviceLocator, new EnvBinder(application, environment));
 
-        JerseyEnvironment jersey = environment.jersey();
         LifecycleEnvironment lifecycle = environment.lifecycle();
         AdminEnvironment admin = environment.admin();
-
-        features.forEach(jersey::register);
 
         listServices(HealthCheck.class).forEach(healthCheck -> {
             String name = healthCheck.getClass().getSimpleName();
@@ -72,6 +63,8 @@ public class HK2Bundle implements Bundle {
         listServices(LifeCycle.Listener.class).forEach(lifecycle::addLifeCycleListener);
         listServices(ServerLifecycleListener.class).forEach(lifecycle::addServerLifecycleListener);
         listServices(Task.class).forEach(admin::addTask);
+
+        environment.jersey().register(HK2LifecycleListener.class);
 
         //Set service locator as parent for Jersey's service locator
         environment.getApplicationContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
@@ -102,6 +95,22 @@ public class HK2Bundle implements Bundle {
             bind(environment.getObjectMapper());
             bind(environment.metrics());
             bind(environment.getValidator());
+        }
+    }
+
+    private static class BundleBinder extends AbstractBinder {
+
+        @Override
+        protected void configure() {
+            bind(HK2ValidationBundle.class)
+                    .to(HK2ValidationBundle.class)
+                    .to(Bundle.class)
+                    .in(Singleton.class);
+
+            bind(HK2ConfiguredBundle.class)
+                    .to(HK2ConfiguredBundle.class)
+                    .to(ConfiguredBundle.class)
+                    .in(Singleton.class);
         }
     }
 }
