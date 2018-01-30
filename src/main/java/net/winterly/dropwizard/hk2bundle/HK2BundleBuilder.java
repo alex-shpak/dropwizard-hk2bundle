@@ -1,7 +1,8 @@
 package net.winterly.dropwizard.hk2bundle;
 
+import io.dropwizard.Configuration;
+import io.dropwizard.db.DatabaseConfiguration;
 import io.dropwizard.setup.Bootstrap;
-import net.winterly.dropwizard.hk2bundle.jdbi.DataSourceFactoryProvider;
 import net.winterly.dropwizard.hk2bundle.jdbi.JDBIBinder;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
@@ -23,14 +24,39 @@ public class HK2BundleBuilder {
         return this;
     }
 
-    public HK2BundleBuilder withJDBI(DataSourceFactoryProvider dataSourceFactoryProvider) {
-        binders.add(new JDBIBinder(dataSourceFactoryProvider));
+    /**
+     * Add inject bindings for DBI and DAO objects
+     *
+     * @param databaseConfiguration lambda returning {@link io.dropwizard.db.DataSourceFactory} for JDBI
+     * @param <T>                   configuration generic type
+     * @return self
+     */
+    public <T extends Configuration> HK2BundleBuilder jdbi(DatabaseConfiguration<T> databaseConfiguration) {
+        binders.add(new JDBIBinder(databaseConfiguration));
         return this;
     }
 
+    /**
+     * Same as {@link #jdbi(DatabaseConfiguration)} with convenience generic class
+     *
+     * @param databaseConfiguration lambda returning {@link io.dropwizard.db.DataSourceFactory} for JDBI
+     * @param configurationClass    configuration instance for defining {@link T}
+     * @param <T>                   configuration generic type
+     * @return self
+     */
+    public <T extends Configuration> HK2BundleBuilder jdbi(DatabaseConfiguration<T> databaseConfiguration, Class<T> configurationClass) {
+        jdbi(databaseConfiguration);
+        return this;
+    }
+
+    /**
+     * Creates and initializes {@link HK2Bundle} as well as bootstrap {@link ServiceLocator}
+     *
+     * @return created bundle instance
+     */
     public HK2Bundle build() {
         ServiceLocator serviceLocator = ServiceLocatorUtilities.createAndPopulateServiceLocator();
-        ServiceLocatorUtilities.bind(serviceLocator, binders.toArray(new Binder[]{}));
+        ServiceLocatorUtilities.bind(serviceLocator, binders.toArray(new Binder[binders.size()]));
 
         return new HK2Bundle(serviceLocator);
     }

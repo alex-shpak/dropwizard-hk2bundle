@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.addOneConstant;
 
 /**
- * Configured bundle used to obtain and bind configuration instance into HK2.
+ * Configured bundle used to obtain and bind configuration instance into DI container.
  */
 class HK2ConfiguredBundle implements ConfiguredBundle<Configuration> {
 
@@ -24,8 +24,7 @@ class HK2ConfiguredBundle implements ConfiguredBundle<Configuration> {
     }
 
     @Override
-    public void run(Configuration configuration, Environment environment) throws Exception {
+    public void run(Configuration configuration, Environment environment) {
         addOneConstant(serviceLocator, configuration);
     }
-
 }

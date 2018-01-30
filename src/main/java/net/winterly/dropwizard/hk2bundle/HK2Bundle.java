@@ -1,5 +1,7 @@
 package net.winterly.dropwizard.hk2bundle;
 
+import com.codahale.metrics.Metric;
+import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.Application;
 import io.dropwizard.Bundle;
@@ -16,15 +18,16 @@ import net.winterly.dropwizard.hk2bundle.validation.HK2ValidationBundle;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.hk2.utilities.reflection.ReflectionHelper;
 import org.glassfish.jersey.servlet.ServletProperties;
 
-import javax.inject.Singleton;
 import java.util.List;
+
+import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.addOneConstant;
 
 public class HK2Bundle implements Bundle {
 
-    final ServiceLocator serviceLocator;
+    private final ServiceLocator serviceLocator;
 
     private Application application;
 
@@ -41,6 +44,9 @@ public class HK2Bundle implements Bundle {
     public void initialize(Bootstrap<?> bootstrap) {
         this.application = bootstrap.getApplication();
 
+        // Register application ASAP, so other bundles can inject it
+        addOneConstant(serviceLocator, application, null, Application.class, application.getClass());
+
         listServices(Bundle.class).forEach(bootstrap::addBundle);
         listServices(ConfiguredBundle.class).forEach(bootstrap::addBundle);
         listServices(Command.class).forEach(bootstrap::addCommand);
@@ -48,16 +54,21 @@ public class HK2Bundle implements Bundle {
 
     @Override
     public void run(Environment environment) {
-        ServiceLocatorUtilities.bind(serviceLocator, new EnvBinder(application, environment));
+        addOneConstant(serviceLocator, environment);
+        addOneConstant(serviceLocator, environment.getObjectMapper());
+        addOneConstant(serviceLocator, environment.metrics());
+        addOneConstant(serviceLocator, environment.getValidator());
 
         LifecycleEnvironment lifecycle = environment.lifecycle();
+        MetricRegistry metricRegistry = environment.metrics();
         AdminEnvironment admin = environment.admin();
 
         listServices(HealthCheck.class).forEach(healthCheck -> {
-            String name = healthCheck.getClass().getSimpleName();
-            environment.healthChecks().register(name, healthCheck);
+            environment.healthChecks().register(getName(healthCheck), healthCheck);
         });
-
+        listServices(Metric.class).forEach(metric -> {
+            metricRegistry.register(getName(metric), metric);
+        });
         listServices(Managed.class).forEach(lifecycle::manage);
         listServices(LifeCycle.class).forEach(lifecycle::manage);
         listServices(LifeCycle.Listener.class).forEach(lifecycle::addLifeCycleListener);
@@ -77,40 +88,20 @@ public class HK2Bundle implements Bundle {
         return serviceLocator.getAllServices(type);
     }
 
-    private static class EnvBinder extends AbstractBinder {
-
-        private final Application application;
-        private final Environment environment;
-
-        private EnvBinder(Application application, Environment environment) {
-            this.application = application;
-            this.environment = environment;
+    private String getName(Object object) {
+        String name = ReflectionHelper.getName(object.getClass());
+        if (name == null) {
+            return object.getClass().getSimpleName();
         }
-
-        @Override
-        protected void configure() {
-            bind(application);
-            bind(application).to(Application.class);
-            bind(environment);
-            bind(environment.getObjectMapper());
-            bind(environment.metrics());
-            bind(environment.getValidator());
-        }
+        return name;
     }
 
-    private static class BundleBinder extends AbstractBinder {
+    private static class BundleBinder extends DropwizardBinder {
 
         @Override
         protected void configure() {
-            bind(HK2ValidationBundle.class)
-                    .to(HK2ValidationBundle.class)
-                    .to(Bundle.class)
-                    .in(Singleton.class);
-
-            bind(HK2ConfiguredBundle.class)
-                    .to(HK2ConfiguredBundle.class)
-                    .to(ConfiguredBundle.class)
-                    .in(Singleton.class);
+            register(HK2ValidationBundle.class);
+            register(HK2ConfiguredBundle.class);
         }
     }
 }

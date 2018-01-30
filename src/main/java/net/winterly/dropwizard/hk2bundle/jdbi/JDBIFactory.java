@@ -1,12 +1,14 @@
 package net.winterly.dropwizard.hk2bundle.jdbi;
 
 import io.dropwizard.Configuration;
+import io.dropwizard.db.DatabaseConfiguration;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Environment;
 import org.glassfish.hk2.api.Factory;
 import org.skife.jdbi.v2.DBI;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 public class JDBIFactory implements Factory<DBI> {
 
@@ -20,13 +22,14 @@ public class JDBIFactory implements Factory<DBI> {
     private Configuration configuration;
 
     @Inject
-    private DataSourceFactoryProvider<Configuration> dataSourceFactoryProvider;
+    @Named("jdbi")
+    private DatabaseConfiguration<Configuration> databaseConfiguration;
 
     @Override
     public DBI provide() {
         return factory.build(
                 environment,
-                dataSourceFactoryProvider.apply(configuration),
+                databaseConfiguration.getDataSourceFactory(configuration),
                 name
         );
     }
