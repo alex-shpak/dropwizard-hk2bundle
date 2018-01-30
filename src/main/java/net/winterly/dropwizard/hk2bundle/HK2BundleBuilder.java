@@ -1,5 +1,6 @@
 package net.winterly.dropwizard.hk2bundle;
 
+import io.dropwizard.Bundle;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DatabaseConfiguration;
 import io.dropwizard.setup.Bootstrap;
@@ -12,15 +13,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.addOneConstant;
+
 public class HK2BundleBuilder {
 
     private final List<Binder> binders = new ArrayList<>();
+    private final List<Bundle> bundles = new ArrayList<>();
 
     HK2BundleBuilder() {
+
     }
 
     public HK2BundleBuilder bind(Binder... binders) {
         Collections.addAll(this.binders, binders);
+        return this;
+    }
+
+    public HK2BundleBuilder bundle(Bundle... bundles) {
+        Collections.addAll(this.bundles, bundles);
         return this;
     }
 
@@ -57,6 +67,11 @@ public class HK2BundleBuilder {
     public HK2Bundle build() {
         ServiceLocator serviceLocator = ServiceLocatorUtilities.createAndPopulateServiceLocator();
         ServiceLocatorUtilities.bind(serviceLocator, binders.toArray(new Binder[binders.size()]));
+
+        bundles.forEach(bundle -> {
+            serviceLocator.inject(bundle);
+            addOneConstant(serviceLocator, bundle);
+        });
 
         return new HK2Bundle(serviceLocator);
     }
