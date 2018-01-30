@@ -36,6 +36,11 @@ public class HK2Bundle implements Bundle {
         ServiceLocatorUtilities.bind(serviceLocator, new BundleBinder());
     }
 
+    /**
+     * Creates new instance of {@link HK2BundleBuilder}
+     *
+     * @return new builder
+     */
     public static HK2BundleBuilder builder() {
         return new HK2BundleBuilder();
     }

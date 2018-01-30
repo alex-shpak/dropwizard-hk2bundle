@@ -1,18 +1,22 @@
 ## Dropwizard hk2 Bundle
-Simple dropwizard bundle for autodiscovery and injection of dropwizard managed objects, tasks etc using hk2 integration
+Dropwizard bundle for injection of managed objects, tasks etc using hk2 integration
+
+
+## Motivation
+HK2 is default DI container in jersey, which is widely used in dropwizard, therefore it seems logical to use single DI container.
 
 
 ## Features
- - Auto registration and injection for:
+ - Registration and injection for:
    - Healthchecks
    - Managed objects
    - Lifecycle listeners
    - Tasks
    - Commands
-   - HK2 Binders
+   - Metrics
    - Other bundles
  - Hibernate validators injections
- - Jdbi DAOs injections 
+ - Jdbi (version 2) DAOs injections 
  - Support for injections before Jersey initialisation
  
  
@@ -25,7 +29,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.5.4'
+    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.6.0'
 }
 ```
 
@@ -44,7 +48,7 @@ dependencies {
     <dependency>
         <groupId>com.github.alex-shpak</groupId>
         <artifactId>dropwizard-hk2bundle</artifactId>
-        <version>0.5.4</version>
+        <version>0.6.0</version>
     </dependency>
 </dependencies>
 ```
@@ -59,10 +63,21 @@ bootstrap.addBundle(HK2Bundle.builder()
 );
 ```
 
-All classes that you want to be discovered or injected should be annotated with `@org.jvnet.hk2.annotations.Service` annotation
+Register `DatabaseHealthCheck` in HK2 binder
+```java
+public class Binder extends DropwizardBinder {
+
+    @Override
+    protected void configure() {
+        register(DatabaseHealthCheck.class);
+    }
+}
+```
+
+`DropwizardBinder` is convenience class that contains `register()` method to register objects specific for dropwizard
+So now `DatabaseHealthCheck` get created and initialized by DI container
 
 ```java
-@Service
 public class DatabaseHealthCheck extends HealthCheck {
 
     @Inject 
@@ -78,17 +93,6 @@ public class DatabaseHealthCheck extends HealthCheck {
 }
 ```
 
-Register `DatabaseHealthCheck` in HK2
-```java
-public class Binder extends DropwizardBinder {
-
-    @Override
-    protected void configure() {
-        register(DatabaseHealthCheck.class);
-    }
-}
-```
-`DropwizardBinder` is convenience class that contains `register()` method to register objects specific for dropwizard
 
 
 #### JDBI DAO Injection
@@ -97,12 +101,12 @@ Then you would be able to inject DAOs.
 
 ```java
 HK2Bundle hk2bundle = HK2Bundle.builder()
-        .withJDBI(config -> config.database)
+        .jdbi(config -> config.database, Configuration.class)
         .build();
 bootstrap.addBundle(hk2bundle);
 ```
 ```java
-@Inject
+@InjectDAO
 private MyDAO myDAO;
 ```
 
@@ -120,4 +124,4 @@ After jersey initialisation services (if enabled) will be re-injected with new `
 
 
 ## Licence
-[MIT](LICENCE)
+[MIT](LICENSE)

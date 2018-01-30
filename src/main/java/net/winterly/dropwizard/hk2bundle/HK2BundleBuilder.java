@@ -24,11 +24,24 @@ public class HK2BundleBuilder {
 
     }
 
+    /**
+     * Registers binders to be registered in DI container during build
+     *
+     * @param binders array of binders
+     * @return self
+     * @see DropwizardBinder
+     */
     public HK2BundleBuilder bind(Binder... binders) {
         Collections.addAll(this.binders, binders);
         return this;
     }
 
+    /**
+     * Registers bundles to be registered in DI container during build
+     *
+     * @param bundles array of bundle instances
+     * @return self
+     */
     public HK2BundleBuilder bundle(Bundle... bundles) {
         Collections.addAll(this.bundles, bundles);
         return this;
