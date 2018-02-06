@@ -51,6 +51,7 @@ public class HK2Bundle implements Bundle {
 
         // Register application ASAP, so other bundles can inject it
         addOneConstant(serviceLocator, application, null, Application.class, application.getClass());
+        serviceLocator.inject(application);
 
         listServices(Bundle.class).forEach(bootstrap::addBundle);
         listServices(ConfiguredBundle.class).forEach(bootstrap::addBundle);

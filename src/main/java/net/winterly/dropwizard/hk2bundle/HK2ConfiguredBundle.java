@@ -25,6 +25,7 @@ class HK2ConfiguredBundle implements ConfiguredBundle<Configuration> {
 
     @Override
     public void run(Configuration configuration, Environment environment) {
-        addOneConstant(serviceLocator, configuration);
+        addOneConstant(serviceLocator, configuration, null,
+                getClass(), Configuration.class);
     }
 }

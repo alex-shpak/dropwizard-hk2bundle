@@ -10,7 +10,7 @@ import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import javax.inject.Inject;
 
 /**
- * Lifecycle listener to inject Jersey's serviceLocator to validation bundle, <br/>
+ * Lifecycle listener to inject Jersey's serviceLocator to validation bundle, <br>
  * so that latter can execute context injections
  */
 public class HK2LifecycleListener implements ApplicationEventListener {
