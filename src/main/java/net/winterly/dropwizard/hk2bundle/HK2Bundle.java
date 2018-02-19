@@ -61,9 +61,15 @@ public class HK2Bundle implements Bundle {
     @Override
     public void run(Environment environment) {
         addOneConstant(serviceLocator, environment);
+        addOneConstant(serviceLocator, environment.jersey());
+        addOneConstant(serviceLocator, environment.admin());
+        addOneConstant(serviceLocator, environment.lifecycle());
+        addOneConstant(serviceLocator, environment.servlets());
         addOneConstant(serviceLocator, environment.getObjectMapper());
-        addOneConstant(serviceLocator, environment.metrics());
         addOneConstant(serviceLocator, environment.getValidator());
+        addOneConstant(serviceLocator, environment.metrics());
+        addOneConstant(serviceLocator, environment.healthChecks());
+
 
         LifecycleEnvironment lifecycle = environment.lifecycle();
         MetricRegistry metricRegistry = environment.metrics();
