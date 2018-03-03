@@ -40,12 +40,13 @@ public abstract class DropwizardBinder extends AbstractBinder {
      * @return builder for further modification
      */
     public <T> ServiceBindingBuilder<T> register(Class<T> serviceType) {
-        ServiceBindingBuilder<T> builder = super.bind(serviceType).to(serviceType);
+        ServiceBindingBuilder<T> builder = super.bindAsContract(serviceType);
 
-        dropwizardContracts.stream()
-                .filter(contract -> contract.isAssignableFrom(serviceType))
-                .map(builder::to)
-                .findAny().ifPresent(it -> builder.in(Singleton.class));
+        for (Class<?> contract : dropwizardContracts) {
+            if (contract.isAssignableFrom(serviceType)) {
+                builder.to(contract).in(Singleton.class);
+            }
+        }
 
         return builder;
     }

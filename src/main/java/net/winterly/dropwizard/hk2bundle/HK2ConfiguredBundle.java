@@ -30,7 +30,6 @@ class HK2ConfiguredBundle implements ConfiguredBundle<Configuration> {
     @Override
     public void run(Configuration configuration, Environment environment) {
         Set<Type> contracts = getAdvertisedTypesFromObject(configuration, Contract.class);
-        contracts.add(configuration.getClass());
         contracts.add(Configuration.class);
 
         addOneConstant(serviceLocator, configuration, null, contracts.toArray(new Type[0]));
