@@ -6,8 +6,10 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.ContractsProvided;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.lang.reflect.Type;
 import java.util.Set;
 
@@ -15,17 +17,21 @@ import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.addOneConstant
 import static org.glassfish.hk2.utilities.reflection.ReflectionHelper.getAdvertisedTypesFromObject;
 
 /**
- * Configured bundle used to obtain and bind configuration instance into DI container.
+ * Internal configured bundle used to obtain and bind configuration instance into DI container.
  */
-class HK2ConfiguredBundle implements ConfiguredBundle<Configuration> {
+@Singleton
+@ContractsProvided(ConfiguredBundle.class)
+class HK2ConfigurationBundle implements ConfiguredBundle<Configuration> {
+
+    private final ServiceLocator serviceLocator;
 
     @Inject
-    private ServiceLocator serviceLocator;
+    HK2ConfigurationBundle(ServiceLocator serviceLocator) {
+        this.serviceLocator = serviceLocator;
+    }
 
     @Override
-    public void initialize(Bootstrap<?> bootstrap) {
-
-    }
+    public void initialize(Bootstrap<?> bootstrap) { }
 
     @Override
     public void run(Configuration configuration, Environment environment) {

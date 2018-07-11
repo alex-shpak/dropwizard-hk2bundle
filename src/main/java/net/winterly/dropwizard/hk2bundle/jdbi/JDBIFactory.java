@@ -8,7 +8,6 @@ import org.glassfish.hk2.api.Factory;
 import org.skife.jdbi.v2.DBI;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 public class JDBIFactory implements Factory<DBI> {
 
@@ -22,7 +21,6 @@ public class JDBIFactory implements Factory<DBI> {
     private Configuration configuration;
 
     @Inject
-    @Named("jdbi")
     private DatabaseConfiguration<Configuration> databaseConfiguration;
 
     @Override

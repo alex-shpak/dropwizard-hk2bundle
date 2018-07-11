@@ -5,6 +5,8 @@ Dropwizard bundle for injection of managed objects, tasks etc using hk2 integrat
 ## Motivation
 HK2 is default DI container in jersey, which is widely used in dropwizard, therefore it seems logical to use single DI container.
 
+## TODO!!!
+Add docs about validation bundle registration
 
 ## Features
  - Registration and injection for:
@@ -21,6 +23,8 @@ HK2 is default DI container in jersey, which is widely used in dropwizard, there
  
  
 ## Usage
+Grab latest version from [JitPack](https://jitpack.io/#alex-shpak/dropwizard-hk2bundle)  
+
 #### Gradle
 ```groovy
 repositories {
@@ -29,38 +33,19 @@ repositories {
 ```
 ```groovy
 dependencies {
-    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.6.0'
+    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.6.5'
 }
-```
-
-
-#### Maven
-```xml
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-```
-```xml
-<dependencies>
-    <dependency>
-        <groupId>com.github.alex-shpak</groupId>
-        <artifactId>dropwizard-hk2bundle</artifactId>
-        <version>0.6.0</version>
-    </dependency>
-</dependencies>
 ```
 
 
 #### Code
 Add bundle to your dropwizard application
 ```java
-bootstrap.addBundle(HK2Bundle.builder()
-        .bind(new Binder())
-        .build()
-);
+HK2Bundle hk2bundle = HK2Bundle.builder()
+        .addBinder(new Binder())
+        .build();
+
+bootstrap.addBundle(hk2bundle);
 ```
 
 Register `DatabaseHealthCheck` in HK2 binder
@@ -69,7 +54,7 @@ public class Binder extends DropwizardBinder {
 
     @Override
     protected void configure() {
-        register(DatabaseHealthCheck.class);
+        healthCheck(DatabaseHealthCheck.class);
     }
 }
 ```
@@ -78,6 +63,7 @@ public class Binder extends DropwizardBinder {
 So now `DatabaseHealthCheck` get created and initialized by DI container
 
 ```java
+@Named("database") //Health check name. Class name will be used if not set 
 public class DatabaseHealthCheck extends HealthCheck {
 
     @Inject 

@@ -2,7 +2,9 @@ package net.winterly.dropwizard.hk2bundle;
 
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.health.HealthCheck;
+import com.codahale.metrics.health.HealthCheckRegistry;
 import io.dropwizard.Application;
 import io.dropwizard.Bundle;
 import io.dropwizard.ConfiguredBundle;
@@ -14,35 +16,30 @@ import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.AdminEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import net.winterly.dropwizard.hk2bundle.validation.HK2ValidationBundle;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
+import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.reflection.ReflectionHelper;
 import org.glassfish.jersey.servlet.ServletProperties;
 
 import java.util.List;
 
-import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.addOneConstant;
+import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.*;
 
 public class HK2Bundle implements Bundle {
 
     private final ServiceLocator serviceLocator;
-
     private Application application;
 
-    HK2Bundle(ServiceLocator serviceLocator) {
-        this.serviceLocator = serviceLocator;
-        ServiceLocatorUtilities.bind(serviceLocator, new BundleBinder());
+    public HK2Bundle(Binder... binders) {
+        this(defaultServiceLocator(), binders);
     }
 
-    /**
-     * Creates new instance of {@link HK2BundleBuilder}
-     *
-     * @return new builder
-     */
-    public static HK2BundleBuilder builder() {
-        return new HK2BundleBuilder();
+    public HK2Bundle(ServiceLocator serviceLocator, Binder... binders) {
+        this.serviceLocator = serviceLocator;
+
+        bind(serviceLocator, binders);
+        addClasses(serviceLocator, HK2ConfigurationBundle.class);
     }
 
     @Override
@@ -73,27 +70,31 @@ public class HK2Bundle implements Bundle {
 
         LifecycleEnvironment lifecycle = environment.lifecycle();
         MetricRegistry metricRegistry = environment.metrics();
+        HealthCheckRegistry healthCheckRegistry = environment.healthChecks();
         AdminEnvironment admin = environment.admin();
 
-        listServices(HealthCheck.class).forEach(healthCheck -> {
-            environment.healthChecks().register(getName(healthCheck), healthCheck);
-        });
-        listServices(Metric.class).forEach(metric -> {
-            metricRegistry.register(getName(metric), metric);
-        });
+        listServices(HealthCheck.class).forEach(healthCheck ->
+                healthCheckRegistry.register(getName(healthCheck), healthCheck)
+        );
+        listServices(Metric.class).forEach(metric ->
+                metricRegistry.register(getName(metric), metric)
+        );
+        listServices(MetricSet.class).forEach(metricRegistry::registerAll);
         listServices(Managed.class).forEach(lifecycle::manage);
         listServices(LifeCycle.class).forEach(lifecycle::manage);
         listServices(LifeCycle.Listener.class).forEach(lifecycle::addLifeCycleListener);
         listServices(ServerLifecycleListener.class).forEach(lifecycle::addServerLifecycleListener);
         listServices(Task.class).forEach(admin::addTask);
 
-        environment.jersey().register(HK2LifecycleListener.class);
-
         //Set service locator as parent for Jersey's service locator
         environment.getApplicationContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
         environment.getAdminContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
 
         serviceLocator.inject(application);
+    }
+
+    public ServiceLocator getServiceLocator() {
+        return serviceLocator;
     }
 
     private <T> List<T> listServices(Class<T> type) {
@@ -108,12 +109,7 @@ public class HK2Bundle implements Bundle {
         return name;
     }
 
-    private static class BundleBinder extends DropwizardBinder {
-
-        @Override
-        protected void configure() {
-            register(HK2ValidationBundle.class);
-            register(HK2ConfiguredBundle.class);
-        }
+    private static ServiceLocator defaultServiceLocator() {
+        return createAndPopulateServiceLocator(HK2Bundle.class.getSimpleName());
     }
 }
