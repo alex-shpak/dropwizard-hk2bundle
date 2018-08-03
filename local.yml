@@ -3,4 +3,4 @@ database:
   driverClass: org.h2.Driver
   user: test
   password: test
-  url: jdbc:h2:mem
+  url: jdbc:h2:mem:db

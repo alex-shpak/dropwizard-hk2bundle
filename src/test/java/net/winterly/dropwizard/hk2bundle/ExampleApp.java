@@ -3,6 +3,7 @@ package net.winterly.dropwizard.hk2bundle;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import net.winterly.dropwizard.hk2bundle.jdbi.ExampleDAO;
 import net.winterly.dropwizard.hk2bundle.jdbi.JDBIBinder;
 import net.winterly.dropwizard.hk2bundle.jdbi.JDBIFactory;
 import net.winterly.dropwizard.hk2bundle.jdbi.SqlObjectFactory;
@@ -12,15 +13,15 @@ public class ExampleApp extends Application<ExampleAppConfiguration> {
 
     @Override
     public void initialize(Bootstrap<ExampleAppConfiguration> bootstrap) {
-        JDBIBinder jdbiBinder = new JDBIBinder<ExampleAppConfiguration>()
+        ExampleAppBinder appBinder = new ExampleAppBinder();
+        JDBIBinder jdbiBinder = new JDBIBinder<ExampleAppConfiguration>(configuration -> configuration.database)
                 .setDBIFactory(JDBIFactory.class)
                 .setSqlObjectFactory(SqlObjectFactory.class)
-                .setDatabaseConfiguration(configuration -> configuration.database);
 
-        HK2Bundle hk2Bundle = new HK2Bundle(
-                new ExampleAppBinder(),
-                jdbiBinder
-        );
+                .register(ExampleDAO.class);
+
+
+        HK2Bundle hk2Bundle = new HK2Bundle(appBinder, jdbiBinder);
         bootstrap.addBundle(hk2Bundle);
     }
 

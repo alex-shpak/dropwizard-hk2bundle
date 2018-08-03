@@ -6,24 +6,31 @@ import org.glassfish.hk2.api.InstantiationService;
 import org.skife.jdbi.v2.DBI;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 
+@Singleton
 public class SqlObjectFactory implements Factory<Object> {
 
-    @Inject
-    private InstantiationService instantiationService;
+    private final InstantiationService instantiationService;
+    private final Provider<DBI> dbi;
 
     @Inject
-    private DBI dbi;
+    public SqlObjectFactory(InstantiationService instantiationService, Provider<DBI> dbi) {
+        this.instantiationService = instantiationService;
+        this.dbi = dbi;
+    }
 
     @Override
     public Object provide() {
         Injectee injectee = instantiationService.getInstantiationData().getParentInjectee();
         Class<?> daoInterface = (Class) injectee.getRequiredType();
-        return dbi.onDemand(daoInterface);
+
+        return dbi.get().onDemand(daoInterface);
     }
 
     @Override
     public void dispose(Object instance) {
-        dbi.close(instance);
+        dbi.get().close(instance);
     }
 }

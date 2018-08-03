@@ -13,6 +13,8 @@ dependencies {
     compileOnly "io.dropwizard:dropwizard-jdbi:$dropwizardVersion"
 
     testCompile "junit:junit:$junitVersion"
+    testCompile "com.h2database:h2:1.4.197"
+    testCompile "io.dropwizard:dropwizard-jdbi:$dropwizardVersion"
 }
 
 compileJava {
