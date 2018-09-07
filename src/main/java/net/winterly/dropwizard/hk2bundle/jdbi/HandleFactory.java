@@ -9,6 +9,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+/**
+ * Creates {@link Handle} instances for request and automatically closes them at the end
+ */
 @Singleton
 public class HandleFactory implements Factory<Handle> {
 

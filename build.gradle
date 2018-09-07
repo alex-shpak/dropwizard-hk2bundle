@@ -10,6 +10,7 @@ repositories {
 
 dependencies {
     compile "io.dropwizard:dropwizard-core:$dropwizardVersion"
+    compile "org.glassfish.hk2:hk2-extras:2.5.0-b32"
     compileOnly "io.dropwizard:dropwizard-jdbi:$dropwizardVersion"
 
     testCompile "junit:junit:$junitVersion"

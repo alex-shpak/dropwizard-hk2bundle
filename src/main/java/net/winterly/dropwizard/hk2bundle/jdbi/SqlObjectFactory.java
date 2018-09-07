@@ -9,6 +9,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+/**
+ * Default factory for creating JDBI sql objects. This factory uses requested type from {@link InstantiationService}.
+ */
 @Singleton
 public class SqlObjectFactory implements Factory<Object> {
 

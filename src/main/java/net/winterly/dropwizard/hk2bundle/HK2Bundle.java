@@ -20,7 +20,6 @@ import org.eclipse.jetty.util.component.LifeCycle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.reflection.ReflectionHelper;
-import org.glassfish.jersey.servlet.ServletProperties;
 
 import java.util.List;
 
@@ -86,11 +85,16 @@ public class HK2Bundle implements Bundle {
         listServices(ServerLifecycleListener.class).forEach(lifecycle::addServerLifecycleListener);
         listServices(Task.class).forEach(admin::addTask);
 
-        //Set service locator as parent for Jersey's service locator
+        // Set service locator as parent for Jersey's service locator
+        /*
         environment.getApplicationContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
         environment.getAdminContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
+        */
 
+        // Re-inject application with registered objects
         serviceLocator.inject(application);
+
+        environment.jersey().register(new HK2BridgeFeature(serviceLocator));
     }
 
     public ServiceLocator getServiceLocator() {

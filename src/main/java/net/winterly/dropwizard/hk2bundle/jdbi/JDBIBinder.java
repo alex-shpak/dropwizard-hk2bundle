@@ -37,6 +37,7 @@ public class JDBIBinder<T extends Configuration> extends AbstractBinder {
      *
      * @param dbiFactory dbi factory type
      * @return self
+     * @see JDBIFactory
      */
     public JDBIBinder<T> setDBIFactory(Class<? extends Factory<DBI>> dbiFactory) {
         this.dbiFactory = requireNonNull(dbiFactory);
@@ -48,6 +49,7 @@ public class JDBIBinder<T extends Configuration> extends AbstractBinder {
      *
      * @param sqlObjectFactory proxy factory type
      * @return self
+     * @see SqlObjectFactory
      */
     public JDBIBinder<T> setSqlObjectFactory(Class<? extends Factory<Object>> sqlObjectFactory) {
         this.sqlObjectFactory = requireNonNull(sqlObjectFactory);
@@ -55,7 +57,7 @@ public class JDBIBinder<T extends Configuration> extends AbstractBinder {
     }
 
     /**
-     * Register list of JDBI interfaces
+     * Register list of sql object interfaces
      *
      * @param interfaces interfaces
      * @return self
