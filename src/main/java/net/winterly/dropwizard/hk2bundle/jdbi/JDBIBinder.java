@@ -4,7 +4,7 @@ import io.dropwizard.Configuration;
 import io.dropwizard.db.DatabaseConfiguration;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.skife.jdbi.v2.DBI;
+import org.jdbi.v3.core.Jdbi;
 
 import javax.inject.Singleton;
 import java.util.Collections;
@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
  */
 public class JDBIBinder<T extends Configuration> extends AbstractBinder {
 
-    private Class<? extends Factory<DBI>> dbiFactory = JDBIFactory.class;
+    private Class<? extends Factory<Jdbi>> dbiFactory = JDBIFactory.class;
     private Class<? extends Factory<Object>> sqlObjectFactory = SqlObjectFactory.class;
 
     private DatabaseConfiguration databaseConfiguration;
@@ -39,7 +39,7 @@ public class JDBIBinder<T extends Configuration> extends AbstractBinder {
      * @return self
      * @see JDBIFactory
      */
-    public JDBIBinder<T> setDBIFactory(Class<? extends Factory<DBI>> dbiFactory) {
+    public JDBIBinder<T> setDBIFactory(Class<? extends Factory<Jdbi>> dbiFactory) {
         this.dbiFactory = requireNonNull(dbiFactory);
         return this;
     }

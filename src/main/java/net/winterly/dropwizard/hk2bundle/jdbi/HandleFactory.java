@@ -2,8 +2,8 @@ package net.winterly.dropwizard.hk2bundle.jdbi;
 
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.process.internal.RequestScoped;
-import org.skife.jdbi.v2.DBI;
-import org.skife.jdbi.v2.Handle;
+import org.jdbi.v3.core.Handle;
+import org.jdbi.v3.core.Jdbi;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -15,17 +15,17 @@ import javax.inject.Singleton;
 @Singleton
 public class HandleFactory implements Factory<Handle> {
 
-    private final Provider<DBI> dbi;
+    private final Provider<Jdbi> jdbi;
 
     @Inject
-    public HandleFactory(Provider<DBI> dbi) {
-        this.dbi = dbi;
+    public HandleFactory(Provider<Jdbi> jdbi) {
+        this.jdbi = jdbi;
     }
 
     @Override
     @RequestScoped
     public Handle provide() {
-        return dbi.get().open();
+        return jdbi.get().open();
     }
 
     @Override

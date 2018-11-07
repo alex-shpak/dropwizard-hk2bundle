@@ -3,7 +3,7 @@ package net.winterly.dropwizard.hk2bundle.jdbi;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.Self;
-import org.skife.jdbi.v2.DBI;
+import org.jdbi.v3.core.Jdbi;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -20,24 +20,24 @@ import static org.glassfish.hk2.utilities.reflection.ReflectionHelper.getRawClas
 @Singleton
 public class SqlObjectFactory implements Factory<Object> {
 
-    private final Provider<DBI> dbi;
+    private final Provider<Jdbi> jdbi;
     private final ActiveDescriptor<Factory> activeDescriptor;
 
     @Inject
-    public SqlObjectFactory(Provider<DBI> dbi, @Self ActiveDescriptor<Factory> activeDescriptor) {
+    public SqlObjectFactory(Provider<Jdbi> dbi, @Self ActiveDescriptor<Factory> activeDescriptor) {
         this.activeDescriptor = activeDescriptor;
-        this.dbi = dbi;
+        this.jdbi = dbi;
     }
 
     @Override
     public Object provide() {
         Class<?> daoInterface = extractDaoType(activeDescriptor);
-        return dbi.get().onDemand(daoInterface);
+        return jdbi.get().onDemand(daoInterface);
     }
 
     @Override
     public void dispose(Object instance) {
-        dbi.get().close(instance);
+
     }
 
     private Class<?> extractDaoType(ActiveDescriptor<Factory> activeDescriptor) {

@@ -11,11 +11,11 @@ repositories {
 dependencies {
     compile "io.dropwizard:dropwizard-core:$dropwizardVersion"
     compile "org.glassfish.hk2:hk2-extras:2.5.0-b32"
-    compileOnly "io.dropwizard:dropwizard-jdbi:$dropwizardVersion"
+    compileOnly "io.dropwizard:dropwizard-jdbi3:$dropwizardVersion"
 
     testCompile "junit:junit:$junitVersion"
     testCompile "com.h2database:h2:1.4.197"
-    testCompile "io.dropwizard:dropwizard-jdbi:$dropwizardVersion"
+    testCompile "io.dropwizard:dropwizard-jdbi3:$dropwizardVersion"
 }
 
 compileJava {
