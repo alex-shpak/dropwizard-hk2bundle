@@ -1,4 +1,6 @@
 ## Dropwizard hk2 Bundle
+[![Release](https://jitpack.io/v/alex-shpak/dropwizard-hk2bundle.svg)](https://jitpack.io/#alex-shpak/dropwizard-hk2bundle)
+
 Dropwizard bundle for injection of managed objects, tasks etc using hk2 integration
 
 
@@ -30,7 +32,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.8.0'
+    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.8.1'
 }
 ```
 
