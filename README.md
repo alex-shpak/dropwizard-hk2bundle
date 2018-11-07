@@ -15,7 +15,7 @@ HK2 is default DI container in jersey, which is widely used in dropwizard, there
    - Commands
    - Metrics
    - Other bundles
- - Jdbi (version 2) DAOs injections 
+ - Jdbi DAOs injections 
  - Support for injections before Jersey initialisation
  
  
