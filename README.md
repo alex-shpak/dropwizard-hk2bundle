@@ -5,8 +5,6 @@ Dropwizard bundle for injection of managed objects, tasks etc using hk2 integrat
 ## Motivation
 HK2 is default DI container in jersey, which is widely used in dropwizard, therefore it seems logical to use single DI container.
 
-## TODO!!!
-Add docs about validation bundle registration
 
 ## Features
  - Registration and injection for:
@@ -17,7 +15,6 @@ Add docs about validation bundle registration
    - Commands
    - Metrics
    - Other bundles
- - Hibernate validators injections
  - Jdbi (version 2) DAOs injections 
  - Support for injections before Jersey initialisation
  
@@ -33,7 +30,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.6.5'
+    compile 'com.github.alex-shpak:dropwizard-hk2bundle:0.8.0'
 }
 ```
 
@@ -41,16 +38,15 @@ dependencies {
 #### Code
 Add bundle to your dropwizard application
 ```java
-HK2Bundle hk2bundle = HK2Bundle.builder()
-        .addBinder(new Binder())
-        .build();
+ExampleAppBinder appBinder = new ExampleAppBinder();
 
-bootstrap.addBundle(hk2bundle);
+HK2Bundle hk2Bundle = new HK2Bundle(appBinder);
+bootstrap.addBundle(hk2Bundle);
 ```
 
 Register `DatabaseHealthCheck` in HK2 binder
 ```java
-public class Binder extends DropwizardBinder {
+public class ExampleAppBinder extends DropwizardBinder {
 
     @Override
     protected void configure() {
@@ -82,31 +78,24 @@ public class DatabaseHealthCheck extends HealthCheck {
 
 
 #### JDBI DAO Injection
-Considering you already has `dropwizard-jdbi` module in dependencies, add `JDBIBinder` to `HK2Bundle` configuration.
+Considering you already have `dropwizard-jdbi` module in dependencies, add `JDBIBinder` to `HK2Bundle` configuration.
 Then you would be able to inject DAOs.
 
 ```java
-HK2Bundle hk2bundle = HK2Bundle.builder()
-        .jdbi(config -> config.database, Configuration.class)
-        .build();
-bootstrap.addBundle(hk2bundle);
+ExampleAppBinder appBinder = new ExampleAppBinder();
+JDBIBinder jdbiBinder = new JDBIBinder<ExampleAppConfiguration>(configuration -> configuration.database)
+        // .setDBIFactory(JDBIFactory.class)
+        // .setSqlObjectFactory(SqlObjectFactory.class)
+        .register(ExampleDAO.class);
+
+
+HK2Bundle hk2Bundle = new HK2Bundle(appBinder, jdbiBinder);
+bootstrap.addBundle(hk2Bundle);
 ```
 ```java
-@InjectDAO
-private MyDAO myDAO;
+@Inject
+private ExampleDAO exampleDAO;
 ```
-
-
-## How it works
-Hk2bundle initializes new `ServiceLocator` and binds found services into it.
-Then it sets created `ServiceLocator` as parent of jersey's `ServiceLocator`
-```java
-environment.getApplicationContext().setAttribute(
-    ServletProperties.SERVICE_LOCATOR, serviceLocator
-);
-```
-
-After jersey initialisation services (if enabled) will be re-injected with new `ServiceLocator`
 
 
 ## Licence
