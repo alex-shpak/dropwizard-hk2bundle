@@ -75,7 +75,7 @@ public class JDBIBinder<T extends Configuration> extends AbstractBinder {
         addActiveFactoryDescriptor(HandleFactory.class);
 
         sqlInterfaces.forEach(type -> bindFactory(sqlObjectFactory)
-                .to(type)
+                .to(type) //this will bind to Factory<Type>
                 .in(Singleton.class)
         );
     }

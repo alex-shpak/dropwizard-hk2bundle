@@ -37,8 +37,8 @@ public class HK2Bundle implements Bundle {
     public HK2Bundle(ServiceLocator serviceLocator, Binder... binders) {
         this.serviceLocator = serviceLocator;
 
-        bind(serviceLocator, binders);
         addClasses(serviceLocator, HK2ConfigurationBundle.class);
+        bind(serviceLocator, binders);
     }
 
     @Override

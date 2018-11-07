@@ -1,39 +1,55 @@
 package net.winterly.dropwizard.hk2bundle.jdbi;
 
+import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.Factory;
-import org.glassfish.hk2.api.Injectee;
-import org.glassfish.hk2.api.InstantiationService;
+import org.glassfish.hk2.api.Self;
 import org.skife.jdbi.v2.DBI;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.lang.reflect.Type;
+import java.util.Set;
+
+import static org.glassfish.hk2.utilities.reflection.ReflectionHelper.getFirstTypeArgument;
+import static org.glassfish.hk2.utilities.reflection.ReflectionHelper.getRawClass;
 
 /**
- * Default factory for creating JDBI sql objects. This factory uses requested type from {@link InstantiationService}.
+ * Default factory for creating JDBI sql objects. This factory uses active descriptor to find sql interface type.
  */
 @Singleton
 public class SqlObjectFactory implements Factory<Object> {
 
-    private final InstantiationService instantiationService;
     private final Provider<DBI> dbi;
+    private final ActiveDescriptor<Factory> activeDescriptor;
 
     @Inject
-    public SqlObjectFactory(InstantiationService instantiationService, Provider<DBI> dbi) {
-        this.instantiationService = instantiationService;
+    public SqlObjectFactory(Provider<DBI> dbi, @Self ActiveDescriptor<Factory> activeDescriptor) {
+        this.activeDescriptor = activeDescriptor;
         this.dbi = dbi;
     }
 
     @Override
     public Object provide() {
-        Injectee injectee = instantiationService.getInstantiationData().getParentInjectee();
-        Class<?> daoInterface = (Class) injectee.getRequiredType();
-
+        Class<?> daoInterface = extractDaoType(activeDescriptor);
         return dbi.get().onDemand(daoInterface);
     }
 
     @Override
     public void dispose(Object instance) {
         dbi.get().close(instance);
+    }
+
+    private Class<?> extractDaoType(ActiveDescriptor<Factory> activeDescriptor) {
+        Set<Type> contracts = activeDescriptor.getContractTypes();
+
+        for (Type type : contracts) {
+            Class raw = getRawClass(type);
+            if (Factory.class.isAssignableFrom(raw)) {
+                return (Class<?>) getFirstTypeArgument(type);
+            }
+        }
+
+        throw new IllegalStateException("Unable to resolve sql interface type");
     }
 }
