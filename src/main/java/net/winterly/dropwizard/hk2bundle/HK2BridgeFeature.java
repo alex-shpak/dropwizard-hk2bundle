@@ -8,6 +8,10 @@ import javax.ws.rs.core.FeatureContext;
 
 import static org.glassfish.hk2.extras.ExtrasUtilities.bridgeServiceLocator;
 
+/**
+ * Feature that creates bridge between provided {@link ServiceLocator} and {@link ServiceLocator} obtained from
+ * Jersey in both directions
+ */
 public class HK2BridgeFeature implements Feature {
 
     @Inject

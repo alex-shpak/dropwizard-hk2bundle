@@ -27,6 +27,11 @@ import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.*;
 
 public class HK2Bundle implements Bundle {
 
+    /**
+     * Used to generate unique incremental IDs for ServiceLocator name
+     */
+    private static int nameCounter = 0;
+
     private final ServiceLocator serviceLocator;
     private Application application;
 
@@ -85,12 +90,6 @@ public class HK2Bundle implements Bundle {
         listServices(ServerLifecycleListener.class).forEach(lifecycle::addServerLifecycleListener);
         listServices(Task.class).forEach(admin::addTask);
 
-        // Set service locator as parent for Jersey's service locator
-        /*
-        environment.getApplicationContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
-        environment.getAdminContext().setAttribute(ServletProperties.SERVICE_LOCATOR, serviceLocator);
-        */
-
         // Re-inject application with registered objects
         serviceLocator.inject(application);
 
@@ -113,7 +112,11 @@ public class HK2Bundle implements Bundle {
         return name;
     }
 
-    private static ServiceLocator defaultServiceLocator() {
-        return createAndPopulateServiceLocator(HK2Bundle.class.getSimpleName());
+    private synchronized static ServiceLocator defaultServiceLocator() {
+        String locatorName = String.format("%s-%s",
+                HK2Bundle.class.getSimpleName(),
+                nameCounter++
+        );
+        return createAndPopulateServiceLocator(locatorName);
     }
 }

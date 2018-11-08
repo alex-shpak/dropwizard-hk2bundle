@@ -13,7 +13,7 @@ import java.util.HashSet;
 import static java.util.Objects.requireNonNull;
 
 /**
- * HK2 binder used to configure sql objects injection
+ * HK2 binder configuring and binding SQL Objects injection
  *
  * @param <T> application configuration type that contains {@link io.dropwizard.db.PooledDataSourceFactory}
  */

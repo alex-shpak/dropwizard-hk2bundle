@@ -15,6 +15,9 @@ import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
 
 import javax.inject.Singleton;
 
+/**
+ * Dropwizard-specific {@link AbstractBinder} for classes and instances of managed types
+ */
 @SuppressWarnings("unused")
 public abstract class DropwizardBinder extends AbstractBinder {
 

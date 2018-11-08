@@ -11,6 +11,9 @@ import org.jdbi.v3.core.Jdbi;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * HK2 Factory for {@link Jdbi} instance, uses dropwizard configuration and environment to create instance
+ */
 @Singleton
 public class JDBIFactory implements Factory<Jdbi> {
 

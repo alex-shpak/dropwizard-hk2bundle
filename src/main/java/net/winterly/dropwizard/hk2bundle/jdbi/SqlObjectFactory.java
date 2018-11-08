@@ -40,6 +40,12 @@ public class SqlObjectFactory implements Factory<Object> {
 
     }
 
+    /**
+     * Extract SQL Interface type from {@link ActiveDescriptor} and generic {@link Factory} type
+     *
+     * @param activeDescriptor self descriptor
+     * @return sql object type or throws exception
+     */
     private Class<?> extractDaoType(ActiveDescriptor<Factory> activeDescriptor) {
         Set<Type> contracts = activeDescriptor.getContractTypes();
 
