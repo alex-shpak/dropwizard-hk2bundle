@@ -1,6 +1,8 @@
 package net.winterly.dropwizard.hk2bundle.validation;
 
 import io.dropwizard.Bundle;
+import io.dropwizard.Configuration;
+import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -12,7 +14,7 @@ import javax.validation.ConstraintValidatorFactory;
 import javax.validation.ValidatorFactory;
 import javax.ws.rs.container.ResourceContext;
 
-public class InjectValidatorBundle implements Bundle {
+public class InjectValidatorBundle implements ConfiguredBundle<Configuration> {
 
     private ConstraintValidatorFactory validatorFactory = new ConstraintValidatorFactoryImpl();
 
@@ -26,7 +28,7 @@ public class InjectValidatorBundle implements Bundle {
     }
 
     @Override
-    public void run(Environment environment) {
+    public void run(Configuration configuration, Environment environment) {
         GetLocatorFeature getLocatorFeature = new GetLocatorFeature(serviceLocator -> {
             ResourceContext resourceContext = serviceLocator.getService(ResourceContext.class);
             validatorFactory = resourceContext.getResource(InjectingConstraintValidatorFactory.class);

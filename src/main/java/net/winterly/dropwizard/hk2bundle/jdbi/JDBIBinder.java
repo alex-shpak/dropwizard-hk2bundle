@@ -3,6 +3,7 @@ package net.winterly.dropwizard.hk2bundle.jdbi;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DatabaseConfiguration;
 import org.glassfish.hk2.api.Factory;
+import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.jdbi.v3.core.Jdbi;
 
@@ -22,7 +23,7 @@ public class JDBIBinder<T extends Configuration> extends AbstractBinder {
     private Class<? extends Factory<Jdbi>> dbiFactory = JDBIFactory.class;
     private Class<? extends Factory<Object>> sqlObjectFactory = SqlObjectFactory.class;
 
-    private DatabaseConfiguration databaseConfiguration;
+    private DatabaseConfiguration<T> databaseConfiguration;
     private HashSet<Class<?>> sqlInterfaces = new HashSet<>();
 
     /**
@@ -69,7 +70,7 @@ public class JDBIBinder<T extends Configuration> extends AbstractBinder {
 
     @Override
     protected void configure() {
-        bind(databaseConfiguration).to(DatabaseConfiguration.class);
+        bind(databaseConfiguration).to(new TypeLiteral<DatabaseConfiguration<Configuration>>() {});
 
         addActiveFactoryDescriptor(dbiFactory);
         addActiveFactoryDescriptor(HandleFactory.class);

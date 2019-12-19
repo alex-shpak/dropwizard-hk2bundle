@@ -32,13 +32,13 @@ public abstract class DropwizardBinder extends AbstractBinder {
                 .to(Bundle.class);
     }
 
-    public <T extends ConfiguredBundle> ScopedBindingBuilder<T> configuredBundle(Class<T> configuredBundle) {
+    public <T extends ConfiguredBundle<?>> ScopedBindingBuilder<T> configuredBundle(Class<T> configuredBundle) {
         return bindAsContract(configuredBundle)
                 .to(ConfiguredBundle.class)
                 .in(Singleton.class);
     }
 
-    public <T extends ConfiguredBundle> ScopedBindingBuilder<T> configuredBundle(T configuredBundle) {
+    public <T extends ConfiguredBundle<?>> ScopedBindingBuilder<T> configuredBundle(T configuredBundle) {
         return bind(configuredBundle)
                 .to(ConfiguredBundle.class);
     }

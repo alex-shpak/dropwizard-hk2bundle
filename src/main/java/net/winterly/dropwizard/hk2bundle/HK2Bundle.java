@@ -7,6 +7,7 @@ import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import io.dropwizard.Application;
 import io.dropwizard.Bundle;
+import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.cli.Command;
 import io.dropwizard.lifecycle.Managed;
@@ -25,7 +26,7 @@ import java.util.List;
 
 import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.*;
 
-public class HK2Bundle implements Bundle {
+public class HK2Bundle implements ConfiguredBundle<Configuration> {
 
     /**
      * Used to generate unique incremental IDs for ServiceLocator name
@@ -60,7 +61,7 @@ public class HK2Bundle implements Bundle {
     }
 
     @Override
-    public void run(Environment environment) {
+    public void run(Configuration configuration, Environment environment) throws Exception {
         addOneConstant(serviceLocator, environment);
         addOneConstant(serviceLocator, environment.jersey());
         addOneConstant(serviceLocator, environment.admin());
